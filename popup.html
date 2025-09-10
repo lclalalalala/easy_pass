@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --primary-hover: #4f46e5;
+            --success-color: #10b981;
+            --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 320px;
+            min-height: 200px;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-primary);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header h3 {
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 12px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: var(--shadow);
+            margin-bottom: 16px;
+        }
+
+        .display-item {
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 14px;
+            padding: 12px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            word-break: break-all;
+            text-align: center;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .display-group {
+            margin-bottom: 16px;
+        }
+
+        .display-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .display-content {
+            display: flex;
+            align-items: center;
+        }
+
+        .display-value {
+            flex: 1;
+            margin-right: 8px;
+        }
+
+        .copy-btn {
+            padding: 6px;
+            min-width: 44px;
+            min-height: 44px;
+            font-size: 11px;
+            border: none;
+            border-radius: 8px;
+            background: var(--primary-color);
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .copy-btn:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .settings-btn {
+            width: 100%;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            background: #f1f5f9;
+            color: var(--text-secondary);
+            border: 1px solid #e2e8f0;
+            margin-top: 16px;
+        }
+
+        .settings-btn:hover {
+            background: #e2e8f0;
+            transform: translateY(-1px);
+        }
+
+        .notification {
+            color: var(--success-color);
+            font-size: 12px;
+            font-weight: 500;
+            text-align: center;
+            margin-top: 12px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .notification.show {
+            opacity: 1;
+        }
+
+        .icon {
+            width: 12px;
+            height: 12px;
+            fill: currentColor;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h3>🔒 Username Password Generator</h3>
+        <p>Generate username and password based on current page</p>
+    </div>
+    <div class="card" style="text-align: center; padding: 12px;">
+        <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px;">Current Website</div>
+        <div id="mainDomain" style="font-weight: 500; font-size: 14px;">Loading...</div>
+    </div>
+
+    <div class="card">
+        <div class="display-group">
+            <div class="display-header">Generated Username</div>
+            <div class="display-content">
+                <div id="username" class="display-item display-value">Generating...</div>
+                <button id="copyUsernameBtn" class="copy-btn">
+                    <svg class="icon" viewBox="0 0 24 24">
+                        <path
+                            d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <div class="display-group">
+            <div class="display-header">Generated Password</div>
+            <div class="display-content">
+                <div id="password" class="display-item display-value">Generating...</div>
+                <button id="copyPasswordBtn" class="copy-btn">
+                    <svg class="icon" viewBox="0 0 24 24">
+                        <path
+                            d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <div id="notification" class="notification"></div>
+        <button id="settingsBtn" class="settings-btn">
+            Set Generation Rules
+        </button>
+
+    </div>
+
+    <script src="core.js"></script>
+    <script src="popup.js"></script>
+</body>
+
+</html>
