@@ -4,6 +4,13 @@ __pycache__/
 *.pyo
 *.pyd
 
+# macOS file system files
+.DS_Store
+.AppleDouble
+.LSOverride
+.Spotlight-V100
+.Trashes
+._*
 # IDE and editor files
 .idea/
 .vscode/
