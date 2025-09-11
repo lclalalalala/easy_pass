@@ -1,0 +1,44 @@
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# IDE and editor files
+.idea/
+.vscode/
+*.sublime-workspace
+*.sublime-project
+.trae/
+# Node.js project files
+node_modules/
+package-lock.json
+yarn.lock
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-store/
+# Vite project files
+.vite/
+dist-preview/
+
+
+# Environment files
+.env
+.venv/
+venv/
+*.env.local
+*.env.*.local
+
+# Logs and databases
+*.log
+*.db
+*.sqlite
+
+# Build files
+dist/
+build/
+*.egg-info/
+*.egg
+*.bak
+*.swp
