@@ -12,10 +12,7 @@ A Chrome browser extension that generates passwords based on the current website
 
 ## Installation
 
-1. Open Chrome browser and go to `chrome://extensions/`
-2. Enable "Developer mode"
-3. Click "Load unpacked extension"
-4. Select this project folder
+go to web store search and install
 
 ## Usage
 
@@ -30,40 +27,11 @@ A Chrome browser extension that generates passwords based on the current website
 3. Use the following available variables:
    - `{{domain}}` - Main domain name of the URL
 
-### Function Examples
-
-```javascript
-// Basic example
-'pass_' + {{domain}} + '_' + Math.random().toString(36).substr(2, 8)
-
-// Combined usage
-{{domain}}.split('.')[0] + '_secure_' + Date.now().toString(36)
-```
 
 ### Debugging Function
 1. Enter a function in the settings page and click the "Test Generation Rule" button
 2. View the values of current variables and the generated password
 3. Adjust the function based on the results
-
-## File Structure
-
-```
-password_gen/
-├── manifest.json      # Extension configuration file
-├── popup.html         # Popup window interface
-├── popup.js           # Popup window logic
-├── options.html       # Settings page interface
-├── options.js         # Settings page logic
-├── content.js         # Content script
-└── README.md          # Documentation
-```
-
-## Technology Stack
-
-- Chrome Extension Manifest V3
-- Vanilla JavaScript
-- Chrome Storage API
-- Clipboard API
 
 ## Notes
 

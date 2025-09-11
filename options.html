@@ -95,10 +95,12 @@
 
     <div class="section">
         <label for="usernameFunction" style="margin-top: 15px;">Enter Username Generation Rule:</label>
-        <textarea id="usernameFunction" placeholder="Example: user_{{[domain][0][1][L]}}_{{[domain][2][3][U]}}"></textarea>
+        <textarea id="usernameFunction"
+            placeholder="Example: user_{{[domain][0][1][L]}}_{{[domain][2][3][U]}}"></textarea>
 
         <label for="passwordFunction">Enter Password Generation Rule:</label>
-        <textarea id="passwordFunction" placeholder="Example: pass_{{[domain][0][1][L]}}_{{[domain][2][3][U]}}"></textarea>
+        <textarea id="passwordFunction"
+            placeholder="Example: pass_{{[domain][0][1][L]}}_{{[domain][2][3][U]}}"></textarea>
 
 
 
@@ -112,20 +114,26 @@
             <div id="debugOutput"></div>
         </div>
     </div>
-    
+
     <div
         style="background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 4px; margin: 20px 0; color: #856404; font-weight: bold; text-align: center;">
-        ⚠️ Important Note: Please remember your username and password generation rules. This extension does not have any cloud backup functionality. All information is stored locally. It is recommended to save your rules in a note-taking application ⚠️
+        ⚠️ Important Note: Please remember your username and password generation rules. This extension does not have any
+        cloud backup functionality. All information is stored locally. It is recommended to save your rules in a
+        note-taking application ⚠️
     </div>
-    
+
     <div class="section">
-        <h4 style="margin-top: 20px; color: #333; font-size: 14px; margin-bottom: 12px;">How to Define Generation Rules</h4>
+        <h4 style="margin-top: 20px; color: #333; font-size: 14px; margin-bottom: 12px;">How to Define Generation Rules
+        </h4>
         <div
             style="font-size: 12px; color: #666; line-height: 1.6; padding: 15px; background-color: #f8f9fa; border-radius: 6px; border-left: 4px solid #4285f4;">
 
-            <p style="margin: 0 0 12px 0;">The extension will automatically generate usernames and passwords by extracting variables from the URL and concatenating them with custom fields based on the generation rules.</p>
+            <p style="margin: 0 0 12px 0;">The extension will automatically generate usernames and passwords by
+                extracting variables from the URL and concatenating them with custom fields based on the generation
+                rules.</p>
 
-            <p style="margin: 0 0 12px 0;">By flexibly combining custom fields and URL variables, you can generate unique usernames and passwords for each website that are also easy to remember.</p>
+            <p style="margin: 0 0 12px 0;">By flexibly combining custom fields and URL variables, you can generate
+                unique usernames and passwords for each website that are also easy to remember.</p>
 
             <div
                 style="background-color: #ffffff; padding: 10px; border-radius: 4px; margin: 0 0 12px 0; border: 1px solid #e0e0e0;">
@@ -139,7 +147,8 @@
                 </p>
             </div>
 
-            <p style="margin: 0 0 12px 0;">As long as you can remember your own account password generation rules, you don't need a password book to remember usernames and passwords for different websites.</p>
+            <p style="margin: 0 0 12px 0;">As long as you can remember your own account password generation rules, you
+                don't need a password book to remember usernames and passwords for different websites.</p>
 
             <div style="margin: 0 0 12px 0;">
                 <p style="margin: 0 0 6px 0;"><strong>URL Variable Reference Format:</strong></p>
@@ -161,14 +170,17 @@
                     → Extracts characters 0~2 from the main domain and converts the result to uppercase</p>
             </div>
         </div>
-        
+
         <h4 style="margin-top: 20px; margin-bottom: 15px; color: #333;">Currently Available Variables:</h4>
         <div class="variables"
             style="margin-top: 10px; padding: 12px; border-radius: 6px; background-color: #f9f9f9; border-left: 4px solid #4285f4;">
             <div class="variable-item" style="margin-bottom: 10px; line-height: 1.6;"><strong
-                    style="color: #4285f4;">domain</strong> : The main domain part of the current page, automatically extracted from the URL. Example: For URL "https://www.example.com/path", the domain variable is "example"</div>
+                    style="color: #4285f4;">domain</strong> : The main domain part of the current page, automatically
+                extracted from the URL. Example: For URL "https://www.example.com/path", the domain variable is
+                "example"</div>
             <div class="variable-item" style="font-style: italic; color: #666; font-size: 12px;">
-                Note: Originally planned to add other variables such as website name, path, parameters, etc., but due to complexity and practicality considerations, they are temporarily not added</div>
+                Note: Originally planned to add other variables such as website name, path, parameters, etc., but due to
+                complexity and practicality considerations, they are temporarily not added</div>
         </div>
 
         <h4 style="margin-top: 25px; margin-bottom: 15px; color: #333;">Usage Examples:</h4>
@@ -220,8 +232,8 @@
 
 
 
-    <script src="core.js"></script>
-    <script src="options.js"></script>
+    <script type="module" src="src/core.js"></script>
+    <script type="module" src="src/options.js"></script>
 </body>
 
 </html>

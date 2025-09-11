@@ -1,6 +1,7 @@
 
+import { executePasswordFunction } from './core.js';
 
-// Load saved functions when the page loads
+
 document.addEventListener('DOMContentLoaded', function () {
     loadSavedFunction();
 });
@@ -11,9 +12,9 @@ document.getElementById('saveBtn').addEventListener('click', function () {
     const usernameFunctionText = document.getElementById('usernameFunction').value.trim();
 
     if (passwordFunctionText || usernameFunctionText) {
-        chrome.storage.sync.set({ 
+        chrome.storage.sync.set({
             passwordFunction: passwordFunctionText,
-            usernameFunction: usernameFunctionText 
+            usernameFunction: usernameFunctionText
         }, function () {
             alert('Saved successfully!');
             updateCurrentFunctionDisplay(passwordFunctionText);
@@ -108,7 +109,7 @@ function loadSavedFunction() {
 function updateCurrentFunctionDisplay(passwordFunctionText) {
     const passwordDisplayElement = document.getElementById('currentPasswordFunction');
     const usernameDisplayElement = document.getElementById('currentUsernameFunction');
-    
+
     // Update password display
     if (passwordFunctionText) {
         passwordDisplayElement.textContent = passwordFunctionText;
@@ -117,7 +118,7 @@ function updateCurrentFunctionDisplay(passwordFunctionText) {
         passwordDisplayElement.textContent = 'No password generation rule set';
         passwordDisplayElement.style.color = '#999';
     }
-    
+
     // Update username display
     const usernameFunctionText = document.getElementById('usernameFunction').value.trim();
     if (usernameFunctionText) {

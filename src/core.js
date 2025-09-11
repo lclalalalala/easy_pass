@@ -1,78 +1,14 @@
-// 提取主域名（如从www.baidu.com提取baidu）
-function extractMainDomain(hostname) {
-    // 参数验证，确保输入有效
-    if (!hostname || typeof hostname !== 'string') {
-        return 'Unknown';
+// 提取主域名
+import { getDomain } from 'tldts';
+function extractMainDomain(url) {
+    const domain = getDomain(url);
+    if (!domain) {
+        return null;
     }
-
-    // 移除端口号（如果有）
-    const hostnameWithoutPort = hostname.split(':')[0];
-
-    // 按点分割域名部分
-    let domainParts = hostnameWithoutPort.split('.');
-
-    // 处理常见的特殊顶级域名（如.co.uk, .com.cn等）
-    const specialTLDs = [
-        'co.uk', 'co.jp', 'com.cn', 'net.cn', 'org.cn', 'gov.cn',
-        'ac.uk', 'org.uk', 'me.uk', 'ltd.uk', 'plc.uk',
-        'com.au', 'net.au', 'org.au', 'edu.au', 'gov.au',
-        'co.za', 'co.nz', 'co.kr', 'co.il', 'co.th', 'co.id',
-        'com.br', 'com.mx', 'com.ar', 'com.co', 'com.pe',
-        'ne.jp', 'or.jp', 'ac.jp', 'ad.jp', 'ed.jp',
-        'go.jp', 'gr.jp', 'lg.jp', 'net.il', 'ac.il',
-        'co.in', 'co.hu', 'co.ve', 'co.ao', 'co.mz'
-    ];
-
-    // 根据域名部分数量处理
-    if (domainParts.length > 2) {
-        // 处理三级及以上域名
-        // 检查是否为特殊顶级域名
-        for (const tld of specialTLDs) {
-            const tldParts = tld.split('.');
-            const domainEnding = domainParts.slice(-tldParts.length).join('.');
-
-            if (domainEnding === tld && domainParts.length > tldParts.length) {
-                // 如果是特殊顶级域名，保留倒数(tldParts.length + 1)个部分
-                return domainParts.slice(-tldParts.length - 1).join('.');
-            }
-        }
-
-        // 移除常见子域名
-        const commonSubdomains = [
-            'www', 'ww2', 'www2', 'm', 'mobile', 'wap', 'web',
-            'mail', 'smtp', 'pop', 'imap', 'ftp', 'news', 'bbs',
-            'blog', 'shop', 'store', 'cloud', 'dev', 'api', 'app',
-            'forum', 'admin', 'cdn', 'img', 'image', 'static',
-            'test', 'demo', 'stage', 'staging', 'prod', 'production'
-        ];
-
-        // 循环检查并移除多个常见子域名
-        while (domainParts.length > 2 && commonSubdomains.includes(domainParts[0])) {
-            domainParts = domainParts.slice(1);
-        }
-
-        // 如果处理后仍有多个部分，返回最后两部分
-        if (domainParts.length > 2) {
-            return domainParts.slice(-2).join('.');
-        }
-
-        // 如果只有两个部分，直接返回主域名部分（即倒数第二个部分）
-        if (domainParts.length === 2) {
-            return domainParts[0];
-        }
-    } else if (domainParts.length === 2) {
-        // 处理二级域名（如 baidu.com），直接返回主域名部分
-        return domainParts[0];
-    }
-
-    // 如果只有一个部分，直接返回（理论上不应该出现这种情况）
-    if (domainParts.length === 1) {
-        return domainParts[0];
-    }
-
-    // 返回处理后的域名（默认情况）
-    return domainParts.join('.');
+    return domain.split('.')[0]; // 取 'baidu.com' 的第一部分
 }
+
+
 
 // 预定义字符串操作函数
 function stringOperation(operationStr, variables) {
@@ -190,3 +126,13 @@ async function copyToClipboard(text) {
         return false;
     }
 }
+
+
+// 在 core.js 文件末尾添加以下导出语句
+export {
+    extractMainDomain,
+    executePasswordFunction,
+    generateDefaultPassword,
+    generateDefaultUsername,
+    copyToClipboard
+};

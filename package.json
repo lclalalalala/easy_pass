@@ -1,0 +1,23 @@
+{
+  "name": "password_gen",
+  "version": "1.0.0",
+  "description": "A Chrome browser extension that generates passwords based on the current website.",
+  "type": "module",
+  "main": "src/content.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "vite build",
+    "build-chrome": "node build-chrome-extension.js",
+    "build-all": "npm run build && npm run build-chrome"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "tldts": "^7.0.13"
+  },
+  "devDependencies": {
+    "fs-extra": "^11.3.1",
+    "vite": "^7.1.5"
+  }
+}

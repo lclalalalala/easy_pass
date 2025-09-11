@@ -1,4 +1,4 @@
-
+import { extractMainDomain, executePasswordFunction, generateDefaultUsername, generateDefaultPassword, copyToClipboard } from './core.js';
 
 // 获取当前标签页信息并生成用户名和密码
 document.addEventListener('DOMContentLoaded', async function () {
@@ -94,7 +94,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     } catch (error) {
         console.error('错误:', error);
         document.getElementById('username').textContent = 'Failed to get';
-            document.getElementById('password').textContent = 'Failed to get';
+        document.getElementById('password').textContent = 'Failed to get';
     }
 });
 
