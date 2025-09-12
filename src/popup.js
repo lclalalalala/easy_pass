@@ -7,11 +7,16 @@ document.addEventListener('DOMContentLoaded', async function () {
         let tab;
         try {
             const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-            tab = tabs[0];
+            if (tabs && tabs.length > 0) {
+                tab = tabs[0];
+            } else {
+                throw new Error('No active tabs found');
+            }
         } catch (chromeError) {
-            console.log('Chrome API不可用，使用测试数据');
+            console.log('Chrome API不可用，使用测试数据:', chromeError);
             // 在普通网页中测试时使用测试数据
             tab = { url: 'https://www.example.com/path' };
+            showNotification('使用测试模式，无法访问Chrome API');
         }
 
         // 获取存储的生成函数
@@ -99,38 +104,20 @@ document.addEventListener('DOMContentLoaded', async function () {
 });
 
 // 复制用户名按钮点击事件
-document.getElementById('copyUsernameBtn').addEventListener('click', async function () {
+document.getElementById('copyUsernameBtn').addEventListener('click', function () {
     const username = document.getElementById('username').textContent;
-    try {
-        await copyToClipboard(username);
-    } catch (copyError) {
-        console.log('复制用户名到剪贴板失败:', copyError);
-    }
-    const notification = document.getElementById('notification');
-    notification.textContent = 'Username copied to clipboard';
-    notification.classList.add('show');
-    setTimeout(() => {
-        notification.textContent = '';
-        notification.classList.remove('show');
-    }, 10000);
+    copyWithNotification(username, 'Username copied to clipboard');
 });
 
 // 复制密码按钮点击事件
-document.getElementById('copyPasswordBtn').addEventListener('click', async function () {
+document.getElementById('copyPasswordBtn').addEventListener('click', function () {
     const password = document.getElementById('password').textContent;
-    try {
-        await copyToClipboard(password);
-    } catch (copyError) {
-        console.log('复制密码到剪贴板失败:', copyError);
-    }
-    const notification = document.getElementById('notification');
-    notification.textContent = 'Password copied to clipboard';
-    notification.classList.add('show');
-    setTimeout(() => {
-        notification.textContent = '';
-        notification.classList.remove('show');
-    }, 10000);
+    copyWithNotification(password, 'Password copied to clipboard');
 });
+
+// 在DOMContentLoaded中的自动复制
+// 自动复制密码到剪贴板
+copyWithNotification(password, 'Password copied to clipboard');
 
 // 设置按钮点击事件
 document.getElementById('settingsBtn').addEventListener('click', function () {
@@ -142,3 +129,26 @@ document.getElementById('settingsBtn').addEventListener('click', function () {
         window.location.href = 'options.html';
     }
 });
+
+
+// 复制文本到剪贴板并显示通知
+async function copyWithNotification(text, message) {
+    try {
+        await copyToClipboard(text);
+        showNotification(message);
+    } catch (copyError) {
+        console.error(`复制失败:`, copyError);
+        showNotification('复制失败，请手动复制');
+    }
+}
+
+// 显示通知
+function showNotification(message) {
+    const notification = document.getElementById('notification');
+    notification.textContent = message;
+    notification.classList.add('show');
+    setTimeout(() => {
+        notification.textContent = '';
+        notification.classList.remove('show');
+    }, 10000);
+}
