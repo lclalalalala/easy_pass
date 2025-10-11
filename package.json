@@ -1,6 +1,6 @@
 {
   "name": "password_gen",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A Chrome browser extension that generates passwords based on the current website.",
   "type": "module",
   "main": "src/content.js",
