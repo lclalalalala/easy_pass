@@ -2,10 +2,10 @@
 // 放在 test-helpers/ 下是有意的：这个文件名不匹配 node --test 的发现规则，不会被当成测试执行。
 import fs from 'node:fs';
 
-export const realSetTimeout = globalThis.setTimeout;
+const realSetTimeout = globalThis.setTimeout;
 export const flush = () => new Promise((resolve) => realSetTimeout(resolve, 0));
 
-export function makeElement(tagName = 'div') {
+function makeElement(tagName = 'div') {
     return {
         tagName: tagName.toUpperCase(),
         id: '',
@@ -45,17 +45,6 @@ export function makeElement(tagName = 'div') {
             remove(name) { this.classes = this.classes.filter((c) => c !== name); }
         }
     };
-}
-
-// 按 className 找子孙里第一个匹配的元素（只支持两层，够用）
-export function findChild(root, className) {
-    for (let i = 0; i < root.children.length; i += 1) {
-        const child = root.children[i];
-        if (child.className === className) return child;
-        const nested = findChild(child, className);
-        if (nested) return nested;
-    }
-    return null;
 }
 
 export function findByClassName(root, className) {
@@ -116,7 +105,7 @@ export function installTimers() {
     return { timers, cancelled };
 }
 
-export function createStorageArea(initial = {}, { readFails = false, writeFails = false } = {}) {
+function createStorageArea(initial = {}, { readFails = false, writeFails = false } = {}) {
     const area = {
         data: { ...initial },
         set(obj) {
@@ -171,13 +160,20 @@ export function installBrowser({
     const sync = createStorageArea(storage, { readFails: syncReadFails, writeFails });
     const local = createStorageArea({}, { readFails: localReadFails });
 
+    const runtime = {
+        optionsPageOpened: 0,
+        openOptionsPage() {
+            runtime.optionsPageOpened += 1;
+        }
+    };
+
     globalThis.chrome = {
         tabs: { query: async () => [{ url: tabUrl }] },
         storage: { sync, local },
-        runtime: { openOptionsPage() {} }
+        runtime
     };
 
-    return { copied, alerts, sync, local };
+    return { copied, alerts, sync, local, runtime };
 }
 
 let importCounter = 0;

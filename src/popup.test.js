@@ -123,6 +123,24 @@ test('showing a new notification cancels the previous timer', async () => {
     assert.equal(popup.text('notification'), 'Email copied to clipboard');
 });
 
+test('popup copies the generated password on demand', async () => {
+    const popup = await openPopup({ storage: { emails: ['me@example.com'] } });
+
+    popup.click('copyPasswordBtn');
+    await flush();
+
+    assert.equal(popup.copied[popup.copied.length - 1], 'google!@#');
+    assert.equal(popup.text('notification'), 'Password copied to clipboard');
+});
+
+test('popup opens the settings page from the settings button', async () => {
+    const popup = await openPopup({ storage: {} });
+
+    popup.click('settingsBtn');
+
+    assert.equal(popup.runtime.optionsPageOpened, 1);
+});
+
 test('popup generates a usable default password for a host with no public suffix', async () => {
     const popup = await openPopup({ tabUrl: 'http://localhost:3000/login' });
 
