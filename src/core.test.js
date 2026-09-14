@@ -83,6 +83,18 @@ test('rule: an unknown name stays visible', () => {
     assert.equal(executePasswordFunction('{{nope}}', vars), '{{nope}}');
 });
 
+// 用 `name in variables` 判断会顺着原型链找到 Object.prototype 的成员，
+// 把 [native code] 这种函数源码拼进密码里
+test('rule: inherited object members are not treated as variables', () => {
+    for (const name of ['toString', 'constructor', 'hasOwnProperty', 'valueOf', '__proto__']) {
+        assert.equal(
+            executePasswordFunction(`{{${name}}}`, vars),
+            `{{${name}}}`,
+            `${name} must not resolve to an inherited member`
+        );
+    }
+});
+
 test('rule: the old bracket syntax is no longer substituted', () => {
     assert.equal(executePasswordFunction('{{[domain][0][2][U]}}', vars), '{{[domain][0][2][U]}}');
 });

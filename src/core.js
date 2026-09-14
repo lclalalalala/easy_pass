@@ -71,7 +71,9 @@ function resolveReference(expression, variables) {
         return applyCase(domain.substring(start, end + 1), indexed[3] || '');
     }
 
-    if (trimmed in variables) {
+    // 必须只认自有属性：用 `trimmed in variables` 会顺着原型链匹配到
+    // Object.prototype 的成员，把 toString 之类的函数源码拼进密码里
+    if (Object.prototype.hasOwnProperty.call(variables, trimmed)) {
         return variables[trimmed] == null ? '' : String(variables[trimmed]);
     }
 
