@@ -1,6 +1,6 @@
 # Privacy Policy for Username Password Generator
 
-Last updated: 2025-09-10
+Last updated: 2026-09-14
 
 ## Introduction
 
@@ -8,15 +8,23 @@ This Privacy Policy explains how Username Password Generator ("the Extension") c
 
 ## Information Collection
 
-The Extension does not collect, track, or store any personally identifiable information about you. It does not monitor your browsing activity, collect your website usage data, or gather any information about the websites you visit.
+The Extension does not collect, track, or transmit any information about you to the developer. It does not monitor your browsing activity, collect your website usage data, or gather any information about the websites you visit.
+
+The only information the Extension stores is the information you enter yourself on its settings page: your password and username generation rules, and an optional default email address.
 
 ## How Information is Stored
 
-Any password generation rules you configure within the Extension are securely stored on your local device using the Chrome Storage API. This data remains entirely on your device and is not accessible by any external parties.
+Your settings are stored using the Chrome Storage API, in the synchronized storage area (`chrome.storage.sync`).
+
+If you are signed in to Chrome with sync enabled, Chrome will synchronize this data across the devices signed in to the same Google account, so your settings follow you. This synchronization is carried out by Chrome, not by the Extension, and is governed by Google's Chrome sync terms and privacy policy. If synchronization fails or is unavailable, the Extension falls back to storing your settings locally on the current device only.
+
+If you do not want your settings (including the default email address, if you set one) to be synchronized, sign out of Chrome or disable sync.
 
 ## Information Transmission
 
-The Extension does not send, transmit, or store any of your configured rules or generated passwords to any external servers. All password generation and rule processing occurs locally on your device.
+The Extension itself does not send, transmit, or store your configured rules, your default email address, or your generated passwords to any server operated by the developer. All password generation and rule processing occurs locally on your device.
+
+The only transfer of your settings off your device is the Chrome synchronization described above, which is performed by the browser under your own Google account.
 
 ## Permission Usage
 
@@ -24,17 +32,17 @@ The Extension requires the following permissions to function properly:
 
 - **activeTab**: This permission allows the Extension to access the current tab's URL to suggest appropriate usernames and passwords based on the website you're visiting.
 - **clipboardWrite**: This permission enables the Extension to copy generated usernames and passwords to your clipboard for convenient use.
-- **storage**: This permission is used to store your password generation preferences and rules locally on your device.
+- **storage**: This permission is used to store your password generation preferences, rules, and optional default email address.
 
-These permissions are strictly limited to the core functionality of the Extension and are never used for any other purpose.
+The Extension does not request host permissions for any website, and it does not read, modify, or inject content into the pages you visit. These permissions are strictly limited to the core functionality of the Extension and are never used for any other purpose.
 
 ## Data Security
 
-We take data security seriously. All information stored by the Extension is protected by Chrome's built-in security mechanisms. Since all data remains on your local device, you have complete control over your information.
+We take data security seriously. All information stored by the Extension is protected by Chrome's built-in security mechanisms. Generated passwords are never stored by the Extension: it only derives them from your rules on demand and copies them to your clipboard.
 
 ## User Control
 
-You have full control over the information stored by the Extension. You can view, modify, or delete your password generation rules at any time through the Extension's settings page. Additionally, you can uninstall the Extension at any time, which will remove all associated data from your device.
+You have full control over the information stored by the Extension. You can view, modify, or delete your password generation rules and your default email address at any time through the Extension's settings page; clearing the email field removes it. Uninstalling the Extension removes all associated data from your device.
 
 ## Updates to This Policy
 
