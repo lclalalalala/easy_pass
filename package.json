@@ -6,9 +6,7 @@
   "scripts": {
     "test": "node --test",
     "test:watch": "node --test --watch",
-    "build": "vite build",
-    "build-chrome": "node build-chrome-extension.js",
-    "build-all": "npm run build && npm run build-chrome"
+    "build": "vite build"
   },
   "keywords": [],
   "author": "",
