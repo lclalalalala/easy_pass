@@ -144,7 +144,7 @@ test('options warns and refuses to save when only the sync read fails', async ()
     const page = await openOptions({ storage: { emails: ['a@x.com'] }, syncReadFails: true });
 
     // 读不到就说读不到，不能显示成“你还没配过”
-    assert.match(page.elements.get('currentDefaultEmail').textContent, /could not read/i);
+    assert.match(page.elements.get('currentEmails').textContent, /could not read/i);
 
     page.click('saveEmailBtn');
     await flush();

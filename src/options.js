@@ -72,7 +72,7 @@ function showEmailRows(rows) {
 
         const radio = document.createElement('input');
         radio.type = 'radio';
-        radio.name = 'defaultEmail';
+        radio.name = 'emailDefault';
         radio.className = EMAIL_RADIO_CLASS;
         radio.checked = !!row.isDefault;
         label.appendChild(radio);
@@ -246,7 +246,7 @@ async function loadSavedFunction() {
 
 // 读写全部失败时的警告：明确告诉用户是存储出错，而不是配置不存在
 function showStorageReadWarning() {
-    for (const id of ['currentDefaultEmail', 'currentUsernameFunction', 'currentPasswordFunction']) {
+    for (const id of ['currentEmails', 'currentUsernameFunction', 'currentPasswordFunction']) {
         const element = document.getElementById(id);
         element.textContent = 'Could not read saved settings (storage error)';
         element.style.color = '#d32f2f';
@@ -255,7 +255,7 @@ function showStorageReadWarning() {
 
 // Update current email list display
 function updateCurrentEmailDisplay(emails) {
-    const emailDisplayElement = document.getElementById('currentDefaultEmail');
+    const emailDisplayElement = document.getElementById('currentEmails');
 
     if (emails && emails.length > 0) {
         emailDisplayElement.textContent = emails
@@ -263,7 +263,7 @@ function updateCurrentEmailDisplay(emails) {
             .join('\n');
         emailDisplayElement.style.color = '#333';
     } else {
-        emailDisplayElement.textContent = 'No default email set';
+        emailDisplayElement.textContent = 'No emails set';
         emailDisplayElement.style.color = '#999';
     }
 }

@@ -64,7 +64,7 @@ test('popup keeps the email row visible and explains itself when nothing is set'
 
     // 整行隐藏会让用户不知道有这个功能，所以未设置时也要露出这一行
     assert.notEqual(popup.display('emailGroup'), 'none');
-    assert.match(popup.text('emailEmpty'), /no default email/i);
+    assert.match(popup.text('emailEmpty'), /no emails set/i);
     // 没有邮箱可选 / 可复制时，把下拉和复制按钮藏起来
     assert.equal(popup.display('emailSelect'), 'none');
     assert.equal(popup.display('copyEmailBtn'), 'none');

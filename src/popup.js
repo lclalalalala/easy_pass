@@ -119,7 +119,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             emailEmpty.style.display = 'none';
             emailCopyBtn.style.display = '';
         } else {
-            emailEmpty.textContent = 'No default email set';
+            emailEmpty.textContent = 'No emails set';
             emailEmpty.style.display = '';
             emailSelect.style.display = 'none';
             // 没有邮箱可复制时不要把提示文字复制出去
