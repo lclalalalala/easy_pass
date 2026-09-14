@@ -6,7 +6,7 @@ A Chrome browser extension that generates passwords based on the current website
 
 - 🚀 One-click generation of passwords based on the current website
 - 📋 Automatic copying to clipboard
-- 📧 Optional default email, one click to copy it for the username field
+- 📧 Keep several email addresses, pick one from a dropdown and copy it
 - ⚙️ Custom password generation rules
 - 🔧 Real-time debugging functionality
 - 🌐 Support for URL variable extraction
@@ -22,14 +22,15 @@ go to web store search and install
 2. The extension will automatically generate a password and copy it to clipboard
 3. The password will be displayed in the popup window
 
-### Default Email
+### Emails
 
-Many sites want your email address in the username field. Set it once and it is reused everywhere:
+Many sites want your email address in the username field. You can keep several addresses and choose one when you need it:
 
-1. Open the settings page and fill in "Default Email"
-2. The popup then shows a Default Email row with a copy button
+1. Open the settings page and use "Add Email" to add every address you use; "Remove" drops one
+2. Mark one row as **Default** with its radio button
+3. The popup then shows a dropdown with your addresses - the default one first and pre-selected - plus a copy button
 
-The email is deliberately not derived from the website: it stays the same on every site. Clearing the field removes it.
+Emails are deliberately not derived from the website: the same list is used everywhere. Removing every row clears the list.
 
 ### Custom Password Generation
 1. Click the "Set Generation Rules" button in the popup window
@@ -67,7 +68,7 @@ To try it, open `chrome://extensions`, enable Developer mode, choose "Load unpac
 ## Changelog
 
 ### v1.2
-- Default email setting, copyable from the popup
+- Multiple email addresses with one marked as default; pick and copy from a popup dropdown
 - Settings go through `chrome.storage.sync` with an automatic local fallback
 - Fix: failed clipboard writes no longer claim to have succeeded
 - Fix: hosts without a public suffix (localhost, IPs, intranet names) no longer generate `null!@#` passwords
