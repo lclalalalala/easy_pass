@@ -1,7 +1,36 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { normalizeEmail, isValidEmail, validateEmailInput } from './core.js';
+import { extractMainDomain, normalizeEmail, isValidEmail, validateEmailInput } from './core.js';
+
+test('extractMainDomain returns the registrable domain label', () => {
+    assert.equal(extractMainDomain('www.google.com'), 'google');
+});
+
+test('extractMainDomain handles multi-part public suffixes', () => {
+    assert.equal(extractMainDomain('example.co.uk'), 'example');
+});
+
+test('extractMainDomain falls back to the host for localhost', () => {
+    assert.equal(extractMainDomain('localhost'), 'localhost');
+});
+
+test('extractMainDomain falls back to the host for an IP address', () => {
+    assert.equal(extractMainDomain('192.168.1.10'), '192.168.1.10');
+});
+
+test('extractMainDomain falls back to the host for an intranet name', () => {
+    assert.equal(extractMainDomain('myintranet'), 'myintranet');
+});
+
+test('extractMainDomain strips www when falling back to the host', () => {
+    assert.equal(extractMainDomain('www.myintranet'), 'myintranet');
+});
+
+test('extractMainDomain returns null for an empty host', () => {
+    assert.equal(extractMainDomain(''), null);
+    assert.equal(extractMainDomain(undefined), null);
+});
 
 test('normalizeEmail trims surrounding whitespace', () => {
     assert.equal(normalizeEmail('  user@example.com  '), 'user@example.com');

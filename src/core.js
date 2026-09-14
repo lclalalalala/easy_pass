@@ -1,11 +1,21 @@
 // 提取主域名
 import { getDomain } from 'tldts';
-function extractMainDomain(url) {
-    const domain = getDomain(url);
-    if (!domain) {
+function extractMainDomain(hostname) {
+    if (!hostname) {
         return null;
     }
-    return domain.split('.')[0]; // 取 'baidu.com' 的第一部分
+
+    // 先去掉 www.：对未知后缀 tldts 会把 "www.myintranet" 整体当成域名返回
+    const host = hostname.replace(/^www\./i, '');
+
+    const domain = getDomain(host);
+    if (domain) {
+        return domain.split('.')[0]; // 取 'baidu.com' 的第一部分
+    }
+
+    // tldts 对 localhost、IP、内网域名等非 ICANN 域名返回 null。
+    // 退化成 host 本身，否则会拼出 "null!@#" 这种坏口令。
+    return host || null;
 }
 
 
