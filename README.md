@@ -54,8 +54,7 @@ Emails are deliberately not derived from the website: the same list is used ever
 - References are written inside `{{ }}`: `{{domain}}` (the whole domain), `{{3L}}` (3rd character, lowercase), `{{-1U}}` (last character, uppercase) or a range like `{{1_3U}}`
 - Indexing is 1-based: `1` is the first character and `-1` is the last; a range joins two indexes with `_` and is inclusive; the `U`/`L` suffix is optional
 - A reference that cannot be resolved (index out of range, unknown name) is left in the output as written, so a broken rule is obvious instead of quietly producing a different password
-- Also supported: a few `Math.*` calls with numeric arguments such as `Math.floor(3.7)`
-- Arbitrary JavaScript is deliberately not supported
+- Arbitrary JavaScript is deliberately not supported: `Math.floor(3.7)` and the like stay literal text
 - Settings are saved with `chrome.storage.sync`, so they follow your Chrome profile across devices; if syncing fails they are stored on the current device only and the settings page says so
 
 ## Development

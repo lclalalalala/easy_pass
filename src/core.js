@@ -90,22 +90,6 @@ function executePasswordFunction(functionText, variables) {
             return value === null ? match : value;
         });
 
-        // 支持简单的数学运算（安全版本）
-        result = result.replace(/Math\.(\w+)\((.*?)\)/g, (match, method, args) => {
-            if (Math[method] && typeof Math[method] === 'function') {
-                const parsedArgs = args.split(',').map(arg => {
-                    const trimmed = arg.trim();
-                    // 只允许数字和基本数学运算
-                    if (/^\d+(\.\d+)?$/.test(trimmed)) {
-                        return parseFloat(trimmed);
-                    }
-                    return 0;
-                });
-                return Math[method](...parsedArgs);
-            }
-            return match;
-        });
-
         // 返回最终结果
         return result;
     } catch (error) {

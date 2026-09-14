@@ -75,6 +75,11 @@ test('rule: plain text without references is untouched', () => {
     assert.equal(executePasswordFunction('literal_%@!123', vars), 'literal_%@!123');
 });
 
+test('rule: Math.* is not expanded any more, the text stays as written', () => {
+    assert.equal(executePasswordFunction('Math.floor(3.7)', vars), 'Math.floor(3.7)');
+    assert.equal(executePasswordFunction('id_{{1L}}_Math.pow(2,8)', vars), 'id_e_Math.pow(2,8)');
+});
+
 test('extractMainDomain returns the registrable domain label', () => {
     assert.equal(extractMainDomain('www.google.com'), 'google');
 });
