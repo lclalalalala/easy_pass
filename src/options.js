@@ -9,6 +9,21 @@ const EMAIL_INPUT_CLASS = 'email-input';
 const EMAIL_RADIO_CLASS = 'email-default';
 const EMAIL_REMOVE_CLASS = 'email-remove';
 
+// 设置是异步读回来的，读完之前界面上的空值不是用户的配置。
+// 这个窗口里如果允许保存，就会拿空串覆盖掉真实设置（规则丢了 = 那些网站的密码算不回来了）。
+let settingsLoaded = false;
+
+function setSaveEnabled(enabled) {
+    settingsLoaded = enabled;
+    for (const id of ['saveBtn', 'saveEmailBtn']) {
+        const button = document.getElementById(id);
+        button.disabled = !enabled;
+        button.title = enabled ? '' : 'Settings are still loading';
+    }
+}
+
+setSaveEnabled(false);
+
 document.addEventListener('DOMContentLoaded', function () {
     loadSavedFunction();
 });
@@ -109,6 +124,11 @@ async function saveAll() {
     if (settingsReadFailed) {
         alert('Cannot save: your saved settings could not be read, so saving now would overwrite them. '
             + 'Close and reopen this page, then try again.');
+        return;
+    }
+
+    if (!settingsLoaded) {
+        alert('Settings are still loading, so saving now would overwrite them. Please try again in a moment.');
         return;
     }
 
@@ -242,6 +262,9 @@ async function loadSavedFunction() {
     // Update display
     updateCurrentFunctionDisplay(result.passwordFunction);
     updateCurrentEmailDisplay(emails);
+
+    // 读完了才允许保存
+    setSaveEnabled(true);
 }
 
 // 读写全部失败时的警告：明确告诉用户是存储出错，而不是配置不存在

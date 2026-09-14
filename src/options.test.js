@@ -10,9 +10,15 @@ import { installDom, installBrowser, loadPage, flush, findByClassName } from '..
 const OPTIONS_HTML = new URL('../options.html', import.meta.url);
 const OPTIONS_JS = new URL('./options.js', import.meta.url);
 
-async function openOptions({ storage = {}, storageWriteFails = false, syncReadFails = false, localReadFails = false } = {}) {
+async function openOptions({
+    storage = {},
+    storageWriteFails = false,
+    syncReadFails = false,
+    localReadFails = false,
+    readNever = false
+} = {}) {
     const elements = installDom([OPTIONS_HTML]);
-    const browser = installBrowser({ storage, writeFails: storageWriteFails, syncReadFails, localReadFails });
+    const browser = installBrowser({ storage, writeFails: storageWriteFails, syncReadFails, localReadFails, readNever });
     await loadPage(OPTIONS_JS);
 
     // 每次都重新查找：重绘后容器里的子元素是新的
@@ -168,6 +174,26 @@ test('options refuses to save when neither storage area can be read', async () =
 
     assert.match(page.alerts[page.alerts.length - 1], /overwrite/i);
     assert.deepEqual(page.sync.data.emails, ['a@x.com']);
+});
+
+// 设置是异步读回来的。读完之前界面上的空值并不是用户的配置，
+// 这时候点保存会直接把配置清空（旧值被空串覆盖）。
+test('options refuses to save while the settings are still loading', async () => {
+    const stored = { emails: ['a@x.com'], passwordFunction: 'secret_{{1U}}' };
+    const page = await openOptions({ storage: stored, readNever: true });
+
+    page.click('saveBtn');
+    await flush();
+
+    assert.match(page.alerts[page.alerts.length - 1], /loading/i);
+    assert.deepEqual(page.sync.data, stored, 'nothing may be written before the load finishes');
+});
+
+test('options disables the save buttons until the settings have loaded', async () => {
+    const page = await openOptions({ storage: { emails: ['a@x.com'] } });
+
+    assert.equal(page.elements.get('saveBtn').disabled, false);
+    assert.equal(page.elements.get('saveEmailBtn').disabled, false);
 });
 
 test('debug output is built as text nodes, never as an HTML string', async () => {

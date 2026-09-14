@@ -105,7 +105,7 @@ export function installTimers() {
     return { timers, cancelled };
 }
 
-function createStorageArea(initial = {}, { readFails = false, writeFails = false } = {}) {
+function createStorageArea(initial = {}, { readFails = false, readNever = false, writeFails = false } = {}) {
     const area = {
         data: { ...initial },
         set(obj) {
@@ -114,6 +114,8 @@ function createStorageArea(initial = {}, { readFails = false, writeFails = false
             return Promise.resolve();
         },
         get(keys) {
+            // 挂住不返回：用来模拟“设置还没读回来”的那个窗口
+            if (readNever) return new Promise(() => {});
             if (readFails) return Promise.reject(new Error('storage read failed'));
             const out = {};
             for (const key of keys) {
@@ -137,6 +139,7 @@ export function installBrowser({
     // 两个区域可以分别失效：真实的 chrome.storage 里 sync 和 local 是独立操作
     syncReadFails = readFails,
     localReadFails = readFails,
+    readNever = false,
     writeFails = false
 } = {}) {
     const copied = [];
@@ -157,8 +160,8 @@ export function installBrowser({
 
     globalThis.alert = (message) => alerts.push(message);
 
-    const sync = createStorageArea(storage, { readFails: syncReadFails, writeFails });
-    const local = createStorageArea({}, { readFails: localReadFails });
+    const sync = createStorageArea(storage, { readFails: syncReadFails, readNever, writeFails });
+    const local = createStorageArea({}, { readFails: localReadFails, readNever });
 
     const runtime = {
         optionsPageOpened: 0,
