@@ -87,10 +87,17 @@ test('save still succeeds when the local fallback cleanup fails', async () => {
     local.remove = () => Promise.reject(new Error('cleanup unavailable'));
     const store = createSettingsStore(sync, local);
 
-    const result = await store.save({ defaultEmail: 'me@example.com' });
+    // 这条用例故意让清理失败，clearFallback 会 warn，不要污染测试输出
+    const realWarn = console.warn;
+    console.warn = () => {};
+    try {
+        const result = await store.save({ defaultEmail: 'me@example.com' });
 
-    assert.deepEqual(sync.data, { defaultEmail: 'me@example.com' });
-    assert.equal(result.backend, 'sync');
+        assert.deepEqual(sync.data, { defaultEmail: 'me@example.com' });
+        assert.equal(result.backend, 'sync');
+    } finally {
+        console.warn = realWarn;
+    }
 });
 
 test('save rejects when both sync and local fail', async () => {
@@ -104,7 +111,7 @@ test('load prefers the local fallback over stale sync values', async () => {
     const local = fakeArea({ defaultEmail: 'fresh@example.com' });
     const store = createSettingsStore(sync, local);
 
-    assert.deepEqual(await store.load(), { defaultEmail: 'fresh@example.com' });
+    assert.deepEqual((await store.load()).data, { defaultEmail: 'fresh@example.com' });
 });
 
 test('load merges local fallback keys over sync keys', async () => {
@@ -112,7 +119,7 @@ test('load merges local fallback keys over sync keys', async () => {
     const local = fakeArea({ passwordFunction: 'local-pass' });
     const store = createSettingsStore(sync, local);
 
-    assert.deepEqual(await store.load(), {
+    assert.deepEqual((await store.load()).data, {
         defaultEmail: 'synced@example.com',
         passwordFunction: 'local-pass'
     });
@@ -122,20 +129,38 @@ test('load returns sync values when no local fallback exists', async () => {
     const sync = fakeArea({ defaultEmail: 'me@example.com' });
     const store = createSettingsStore(sync, fakeArea());
 
-    assert.deepEqual(await store.load(), { defaultEmail: 'me@example.com' });
+    assert.deepEqual((await store.load()).data, { defaultEmail: 'me@example.com' });
 });
 
 test('load still returns local values when the sync read fails', async () => {
     const local = fakeArea({ defaultEmail: 'me@example.com' });
     const store = createSettingsStore(failingArea(new Error('sync down')), local);
 
-    assert.deepEqual(await store.load(), { defaultEmail: 'me@example.com' });
+    assert.deepEqual((await store.load()).data, { defaultEmail: 'me@example.com' });
 });
 
-test('load returns an empty object when every read fails', async () => {
+test('load returns no data when every read fails', async () => {
     const store = createSettingsStore(failingArea(new Error('sync down')), failingArea(new Error('local down')));
 
-    assert.deepEqual(await store.load(), {});
+    assert.deepEqual((await store.load()).data, {});
+});
+
+test('load reports no read errors when both areas are readable', async () => {
+    const store = createSettingsStore(fakeArea(), fakeArea());
+
+    assert.deepEqual((await store.load()).readErrors, { sync: false, local: false });
+});
+
+test('load reports which area failed to read', async () => {
+    const store = createSettingsStore(failingArea(new Error('sync down')), fakeArea());
+
+    assert.deepEqual((await store.load()).readErrors, { sync: true, local: false });
+});
+
+test('load reports both areas failing to read', async () => {
+    const store = createSettingsStore(failingArea(new Error('sync down')), failingArea(new Error('local down')));
+
+    assert.deepEqual((await store.load()).readErrors, { sync: true, local: true });
 });
 
 test('SETTINGS_KEYS covers every stored setting', () => {

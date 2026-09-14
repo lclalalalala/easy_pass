@@ -116,7 +116,13 @@ document.getElementById('debugBtn').addEventListener('click', async function () 
 
 // Load saved functions
 async function loadSavedFunction() {
-    const result = await store.load();
+    const { data: result, readErrors } = await store.load();
+
+    // 两个存储区域都读不到时，不能让 "No ... set" 冒充成“用户还没配过”
+    if (readErrors.sync && readErrors.local) {
+        showStorageReadWarning();
+        return;
+    }
 
     if (result.passwordFunction) {
         document.getElementById('passwordFunction').value = result.passwordFunction;
@@ -131,6 +137,15 @@ async function loadSavedFunction() {
     // Update display
     updateCurrentFunctionDisplay(result.passwordFunction);
     updateCurrentEmailDisplay(result.defaultEmail);
+}
+
+// 读写全部失败时的警告：明确告诉用户是存储出错，而不是配置不存在
+function showStorageReadWarning() {
+    for (const id of ['currentDefaultEmail', 'currentUsernameFunction', 'currentPasswordFunction']) {
+        const element = document.getElementById(id);
+        element.textContent = 'Could not read saved settings (storage error)';
+        element.style.color = '#d32f2f';
+    }
 }
 
 // Update current default email display

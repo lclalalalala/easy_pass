@@ -30,8 +30,9 @@ export function createSettingsStore(sync, local) {
         return { backend: 'sync' };
     }
 
+    // 返回 { data, readErrors }：两个区域各自容错，任意一个读失败都不让整个加载失败。
+    // readErrors 必须回传给调用方，否则读失败与“用户没配过”在界面上无法区分。
     async function load() {
-        // 两个区域各自容错：任意一个读失败都不应该让整个加载失败
         const [localResult, syncResult] = await Promise.allSettled([
             local.get(SETTINGS_KEYS),
             sync.get(SETTINGS_KEYS)
@@ -39,7 +40,13 @@ export function createSettingsStore(sync, local) {
         const syncData = syncResult.status === 'fulfilled' ? syncResult.value : {};
         const localData = localResult.status === 'fulfilled' ? localResult.value : {};
 
-        return { ...syncData, ...localData };
+        return {
+            data: { ...syncData, ...localData },
+            readErrors: {
+                sync: syncResult.status === 'rejected',
+                local: localResult.status === 'rejected'
+            }
+        };
     }
 
     return { save, load };

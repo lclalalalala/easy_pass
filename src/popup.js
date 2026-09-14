@@ -22,13 +22,17 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         // 获取存储的生成函数
         let data;
+        let settingsUnreadable = false;
         try {
             const store = createSettingsStore(chrome.storage.sync, chrome.storage.local);
-            data = await store.load();
+            const loaded = await store.load();
+            data = loaded.data;
+            settingsUnreadable = loaded.readErrors.sync && loaded.readErrors.local;
         } catch (storageError) {
             console.log('Storage API不可用，使用默认函数');
             // 在普通网页中测试时使用空数据
             data = {};
+            settingsUnreadable = true;
         }
 
         let username = 'Generation failed';
@@ -96,6 +100,12 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         // 自动复制密码到剪贴板（失败时必须如实告知，否则用户会以为已经复制成功）
         await copyWithNotification(password, 'Password copied to clipboard');
+
+        // 两个存储区域都读不到时，界面上的默认值并不是用户的配置，必须提示，
+        // 否则用户会以为自己的设置丢了 / 生效了
+        if (settingsUnreadable) {
+            showNotification('Could not read saved settings');
+        }
 
     } catch (error) {
         console.error('错误:', error);

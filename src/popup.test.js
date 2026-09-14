@@ -28,11 +28,12 @@ function makeElement(id) {
 }
 
 // chrome.storage 区域替身
-function storageArea(initial = {}) {
+function storageArea(initial = {}, { readFails = false } = {}) {
     const area = {
         data: { ...initial },
         set(obj) { Object.assign(area.data, obj); return Promise.resolve(); },
         get(keys) {
+            if (readFails) return Promise.reject(new Error('storage read failed'));
             const out = {};
             for (const key of keys) {
                 if (key in area.data) out[key] = area.data[key];
@@ -47,7 +48,12 @@ function storageArea(initial = {}) {
 const flush = () => new Promise((resolve) => realSetTimeout(resolve, 0));
 
 // 把 popup.html 里真实存在的 id 全部建出来，再加载 popup.js 并触发 DOMContentLoaded
-async function openPopup({ storage = {}, clipboardFails = false, tabUrl = 'https://www.google.com/search?q=x' } = {}) {
+async function openPopup({
+    storage = {},
+    clipboardFails = false,
+    storageReadFails = false,
+    tabUrl = 'https://www.google.com/search?q=x'
+} = {}) {
     const elements = new Map();
     for (const match of POPUP_HTML.matchAll(/id="([^"]+)"/g)) {
         elements.set(match[1], makeElement(match[1]));
@@ -95,7 +101,10 @@ async function openPopup({ storage = {}, clipboardFails = false, tabUrl = 'https
 
     globalThis.chrome = {
         tabs: { query: async () => [{ url: tabUrl }] },
-        storage: { sync: storageArea(storage), local: storageArea() },
+        storage: {
+            sync: storageArea(storage, { readFails: storageReadFails }),
+            local: storageArea({}, { readFails: storageReadFails })
+        },
         runtime: { openOptionsPage() {} }
     };
 
@@ -169,4 +178,10 @@ test('popup generates a usable default password for a host with no public suffix
 
     assert.equal(popup.text('mainDomain'), 'localhost');
     assert.equal(popup.text('password'), 'localhost!@#');
+});
+
+test('popup flags settings it could not read instead of silently showing defaults', async () => {
+    const popup = await openPopup({ storage: { defaultEmail: 'me@example.com' }, storageReadFails: true });
+
+    assert.match(popup.text('notification'), /could not read/i);
 });
