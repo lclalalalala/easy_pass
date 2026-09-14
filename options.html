@@ -163,11 +163,11 @@
     <div class="section">
         <label for="usernameFunction" style="margin-top: 15px;">Enter Username Generation Rule:</label>
         <textarea id="usernameFunction"
-            placeholder="Example: user_{{[domain][0][1][L]}}_{{[domain][2][3][U]}}"></textarea>
+            placeholder="Example: user_{{1_2L}}_{{3_4U}}"></textarea>
 
         <label for="passwordFunction">Enter Password Generation Rule:</label>
         <textarea id="passwordFunction"
-            placeholder="Example: pass_{{[domain][0][1][L]}}_{{[domain][2][3][U]}}"></textarea>
+            placeholder="Example: pass_{{1_2L}}_{{3_4U}}"></textarea>
 
 
 
@@ -218,23 +218,30 @@
                 don't need a password book to remember usernames and passwords for different websites.</p>
 
             <div style="margin: 0 0 12px 0;">
-                <p style="margin: 0 0 6px 0;"><strong>URL Variable Reference Format:</strong></p>
+                <p style="margin: 0 0 6px 0;"><strong>Reference Format:</strong></p>
                 <p
                     style="margin: 0 0 8px 0; font-family: monospace; background-color: #f1f1f1; padding: 8px; border-radius: 4px; text-align: center;">
-                    <strong>{{[variable][startIndex][endIndex][case]}}</strong>
+                    <strong>{{index}}</strong> &nbsp;or&nbsp; <strong>{{start_end}}</strong> &nbsp;or&nbsp;
+                    <strong>{{domain}}</strong>
                 </p>
             </div>
 
             <ul style="margin: 0 0 12px 0; padding-left: 25px;">
-                <li style="margin-bottom: 4px;">Index: Starts from 0, negative numbers count from the end</li>
-                <li>Case: U(uppercase), L(lowercase)</li>
+                <li style="margin-bottom: 4px;">Index: <strong>1 is the first character</strong>, negative numbers count
+                    from the end (<strong>-1 is the last character</strong>); there is no index 0</li>
+                <li style="margin-bottom: 4px;">Range: join two indexes with <code>_</code>, e.g. <code>1_3</code>,
+                    <code>-3_-1</code> (inclusive on both ends)</li>
+                <li style="margin-bottom: 4px;">Case: append <strong>U</strong> (uppercase) or <strong>L</strong>
+                    (lowercase); leave it off to keep the characters as they are</li>
+                <li>A reference that cannot be worked out (index out of range, or an unknown name) is left in the
+                    password exactly as written, so mistakes are visible instead of silently disappearing</li>
             </ul>
 
             <div style="background-color: #e8f5e8; padding: 10px; border-radius: 4px; border: 1px solid #c8e6c9;">
                 <p style="margin: 0;"><strong>Example Explanation:</strong></p>
                 <p style="margin: 6px 0 0 0;"><code
-                        style="background-color: #f1f1f1; padding: 2px 4px; border-radius: 2px;">{{[domain][0][2][U]}}</code>
-                    → Extracts characters 0~2 from the main domain and converts the result to uppercase</p>
+                        style="background-color: #f1f1f1; padding: 2px 4px; border-radius: 2px;">{{1_3U}}</code>
+                    → Takes the 1st to 3rd characters of the main domain and uppercases them</p>
             </div>
         </div>
 
@@ -261,35 +268,35 @@
             <div class="variable-item"
                 style="padding: 12px; border-radius: 6px; background-color: #fff; border: 1px solid #e0e0e0; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
                 <strong style="color: #333;">Generation Rule:</strong><code
-                    style="background-color: #f5f5f5; padding: 3px 8px; border-radius: 3px; font-family: monospace; margin-left: 5px;">{{[domain][0][2][U]}}</code><br>
+                    style="background-color: #f5f5f5; padding: 3px 8px; border-radius: 3px; font-family: monospace; margin-left: 5px;">{{1_3U}}</code><br>
                 <strong style="color: #333; margin-top: 5px; display: inline-block;">Generation Result:</strong><code
                     style="background-color: #f5f5f5; padding: 3px 8px; border-radius: 3px; font-family: monospace; margin-left: 5px;">EXA</code>
             </div>
             <div class="variable-item"
                 style="padding: 12px; border-radius: 6px; background-color: #fff; border: 1px solid #e0e0e0; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
                 <strong style="color: #333;">Generation Rule:</strong><code
-                    style="background-color: #f5f5f5; padding: 3px 8px; border-radius: 3px; font-family: monospace; margin-left: 5px;">{{[domain][-2][-1][L]}}</code><br>
+                    style="background-color: #f5f5f5; padding: 3px 8px; border-radius: 3px; font-family: monospace; margin-left: 5px;">{{-2_-1L}}</code><br>
                 <strong style="color: #333; margin-top: 5px; display: inline-block;">Generation Result:</strong><code
                     style="background-color: #f5f5f5; padding: 3px 8px; border-radius: 3px; font-family: monospace; margin-left: 5px;">le</code>
             </div>
             <div class="variable-item"
                 style="padding: 12px; border-radius: 6px; background-color: #fff; border: 1px solid #e0e0e0; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
                 <strong style="color: #333;">Generation Rule:</strong><code
-                    style="background-color: #f5f5f5; padding: 3px 8px; border-radius: 3px; font-family: monospace; margin-left: 5px;">{{[domain][1][3][U]}}</code><br>
+                    style="background-color: #f5f5f5; padding: 3px 8px; border-radius: 3px; font-family: monospace; margin-left: 5px;">{{2_4U}}</code><br>
                 <strong style="color: #333; margin-top: 5px; display: inline-block;">Generation Result:</strong><code
                     style="background-color: #f5f5f5; padding: 3px 8px; border-radius: 3px; font-family: monospace; margin-left: 5px;">XAM</code>
             </div>
             <div class="variable-item"
                 style="padding: 12px; border-radius: 6px; background-color: #fff; border: 1px solid #e0e0e0; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
                 <strong style="color: #333;">Generation Rule:</strong><code
-                    style="background-color: #f5f5f5; padding: 3px 8px; border-radius: 3px; font-family: monospace; margin-left: 5px;">PASSWORD_{{[domain][1][3][U]}}</code><br>
+                    style="background-color: #f5f5f5; padding: 3px 8px; border-radius: 3px; font-family: monospace; margin-left: 5px;">PASSWORD_{{2_4U}}</code><br>
                 <strong style="color: #333; margin-top: 5px; display: inline-block;">Generation Result:</strong><code
                     style="background-color: #f5f5f5; padding: 3px 8px; border-radius: 3px; font-family: monospace; margin-left: 5px;">PASSWORD_XAM</code>
             </div>
             <div class="variable-item"
                 style="padding: 12px; border-radius: 6px; background-color: #fff; border: 1px solid #e0e0e0; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
                 <strong style="color: #333;">Generation Rule:</strong><code
-                    style="background-color: #f5f5f5; padding: 3px 8px; border-radius: 3px; font-family: monospace; margin-left: 5px;">{{[domain][0][1][U]}}_PASSWORD_{{[domain][1][3][U]}}_%@!123</code><br>
+                    style="background-color: #f5f5f5; padding: 3px 8px; border-radius: 3px; font-family: monospace; margin-left: 5px;">{{1_2U}}_PASSWORD_{{2_4U}}_%@!123</code><br>
                 <strong style="color: #333; margin-top: 5px; display: inline-block;">Generation Result:</strong><code
                     style="background-color: #f5f5f5; padding: 3px 8px; border-radius: 3px; font-family: monospace; margin-left: 5px;">EX_PASSWORD_XAM_%@!123</code>
             </div>
