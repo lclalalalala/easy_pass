@@ -126,9 +126,14 @@ test('showing a new notification cancels the previous timer', async () => {
 test('popup copies the generated password on demand', async () => {
     const popup = await openPopup({ storage: { emails: ['me@example.com'] } });
 
+    // 打开时的自动复制已经把密码放进去了，所以必须看“多了一次”，
+    // 否则这个断言在按钮处理器被删掉后依然成立（一个永远不会失败的测试）
+    const before = popup.copied.length;
+
     popup.click('copyPasswordBtn');
     await flush();
 
+    assert.equal(popup.copied.length, before + 1);
     assert.equal(popup.copied[popup.copied.length - 1], 'google!@#');
     assert.equal(popup.text('notification'), 'Password copied to clipboard');
 });
