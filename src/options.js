@@ -183,7 +183,7 @@ document.getElementById('debugBtn').addEventListener('click', function () {
     const usernameFunctionText = document.getElementById('usernameFunction').value.trim();
 
     if (!passwordFunctionText && !usernameFunctionText) {
-        alert('Please enter a password or username generation function');
+        alert('Please enter a password or username generation rule');
         return;
     }
 
