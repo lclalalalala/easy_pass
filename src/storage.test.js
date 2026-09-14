@@ -43,18 +43,18 @@ test('save writes settings to sync', async () => {
     const local = fakeArea();
     const store = createSettingsStore(sync, local);
 
-    const result = await store.save({ defaultEmail: 'me@example.com' });
+    const result = await store.save({ emails: ['me@example.com'] });
 
-    assert.deepEqual(sync.data, { defaultEmail: 'me@example.com' });
+    assert.deepEqual(sync.data, { emails: ['me@example.com'] });
     assert.equal(result.backend, 'sync');
 });
 
 test('save clears the local fallback copy once sync succeeds', async () => {
     const sync = fakeArea();
-    const local = fakeArea({ defaultEmail: 'stale@example.com' });
+    const local = fakeArea({ emails: ['stale@example.com'] });
     const store = createSettingsStore(sync, local);
 
-    await store.save({ defaultEmail: 'fresh@example.com' });
+    await store.save({ emails: ['fresh@example.com'] });
 
     assert.deepEqual(local.data, {});
 });
@@ -65,9 +65,9 @@ test('save falls back to local when sync fails', async () => {
     const local = fakeArea();
     const store = createSettingsStore(sync, local);
 
-    const result = await store.save({ defaultEmail: 'me@example.com' });
+    const result = await store.save({ emails: ['me@example.com'] });
 
-    assert.deepEqual(local.data, { defaultEmail: 'me@example.com' });
+    assert.deepEqual(local.data, { emails: ['me@example.com'] });
     assert.equal(result.backend, 'local');
     assert.equal(result.syncError, syncError);
 });
@@ -76,7 +76,7 @@ test('save reports only the sync error, not a local failure, when sync fails', a
     const syncError = new Error('sync unavailable');
     const store = createSettingsStore(failingArea(syncError), fakeArea());
 
-    const result = await store.save({ defaultEmail: 'me@example.com' });
+    const result = await store.save({ emails: ['me@example.com'] });
 
     assert.equal(result.syncError.message, 'sync unavailable');
 });
@@ -91,9 +91,9 @@ test('save still succeeds when the local fallback cleanup fails', async () => {
     const realWarn = console.warn;
     console.warn = () => {};
     try {
-        const result = await store.save({ defaultEmail: 'me@example.com' });
+        const result = await store.save({ emails: ['me@example.com'] });
 
-        assert.deepEqual(sync.data, { defaultEmail: 'me@example.com' });
+        assert.deepEqual(sync.data, { emails: ['me@example.com'] });
         assert.equal(result.backend, 'sync');
     } finally {
         console.warn = realWarn;
@@ -103,40 +103,40 @@ test('save still succeeds when the local fallback cleanup fails', async () => {
 test('save rejects when both sync and local fail', async () => {
     const store = createSettingsStore(failingArea(new Error('sync down')), failingArea(new Error('local down')));
 
-    await assert.rejects(() => store.save({ defaultEmail: 'me@example.com' }), /local down/);
+    await assert.rejects(() => store.save({ emails: ['me@example.com'] }), /local down/);
 });
 
 test('load prefers the local fallback over stale sync values', async () => {
-    const sync = fakeArea({ defaultEmail: 'stale@example.com' });
-    const local = fakeArea({ defaultEmail: 'fresh@example.com' });
+    const sync = fakeArea({ emails: ['stale@example.com'] });
+    const local = fakeArea({ emails: ['fresh@example.com'] });
     const store = createSettingsStore(sync, local);
 
-    assert.deepEqual((await store.load()).data, { defaultEmail: 'fresh@example.com' });
+    assert.deepEqual((await store.load()).data, { emails: ['fresh@example.com'] });
 });
 
 test('load merges local fallback keys over sync keys', async () => {
-    const sync = fakeArea({ defaultEmail: 'synced@example.com', passwordFunction: 'sync-pass' });
+    const sync = fakeArea({ emails: ['synced@example.com'], passwordFunction: 'sync-pass' });
     const local = fakeArea({ passwordFunction: 'local-pass' });
     const store = createSettingsStore(sync, local);
 
     assert.deepEqual((await store.load()).data, {
-        defaultEmail: 'synced@example.com',
+        emails: ['synced@example.com'],
         passwordFunction: 'local-pass'
     });
 });
 
 test('load returns sync values when no local fallback exists', async () => {
-    const sync = fakeArea({ defaultEmail: 'me@example.com' });
+    const sync = fakeArea({ emails: ['me@example.com'] });
     const store = createSettingsStore(sync, fakeArea());
 
-    assert.deepEqual((await store.load()).data, { defaultEmail: 'me@example.com' });
+    assert.deepEqual((await store.load()).data, { emails: ['me@example.com'] });
 });
 
 test('load still returns local values when the sync read fails', async () => {
-    const local = fakeArea({ defaultEmail: 'me@example.com' });
+    const local = fakeArea({ emails: ['me@example.com'] });
     const store = createSettingsStore(failingArea(new Error('sync down')), local);
 
-    assert.deepEqual((await store.load()).data, { defaultEmail: 'me@example.com' });
+    assert.deepEqual((await store.load()).data, { emails: ['me@example.com'] });
 });
 
 test('load returns no data when every read fails', async () => {
@@ -164,5 +164,26 @@ test('load reports both areas failing to read', async () => {
 });
 
 test('SETTINGS_KEYS covers every stored setting', () => {
-    assert.deepEqual([...SETTINGS_KEYS].sort(), ['defaultEmail', 'passwordFunction', 'usernameFunction']);
+    assert.deepEqual([...SETTINGS_KEYS].sort(), ['emails', 'passwordFunction', 'usernameFunction']);
+});
+
+test('load also reads the legacy email key so old settings can be migrated', async () => {
+    const sync = fakeArea({ defaultEmail: 'old@x.com' });
+    const store = createSettingsStore(sync, fakeArea());
+
+    assert.deepEqual((await store.load()).data, { defaultEmail: 'old@x.com' });
+});
+
+test('save only writes the current settings keys, not the legacy one', async () => {
+    const sync = fakeArea({ defaultEmail: 'old@x.com' });
+    const store = createSettingsStore(sync, fakeArea());
+
+    await store.save({ emails: ['new@x.com'], passwordFunction: '', usernameFunction: '' });
+
+    assert.deepEqual(sync.data, {
+        defaultEmail: 'old@x.com',
+        emails: ['new@x.com'],
+        passwordFunction: '',
+        usernameFunction: ''
+    });
 });

@@ -5,7 +5,13 @@
 // 读取优先级：local 的降级副本优先于 sync。
 // 因为 sync 写入失败时，sync 里可能仍留有上一次的旧值，若让 sync 优先会读回旧配置。
 
-export const SETTINGS_KEYS = ['defaultEmail', 'passwordFunction', 'usernameFunction'];
+export const SETTINGS_KEYS = ['emails', 'passwordFunction', 'usernameFunction'];
+
+// 旧版本把邮箱存在单个 defaultEmail 里。只读出来做一次性迁移，不再写入；
+// 保留它也不会让邮箱“复活”，因为 emails 字段一旦存在就不会再走迁移分支。
+export const LEGACY_KEYS = ['defaultEmail'];
+
+const READ_KEYS = [...SETTINGS_KEYS, ...LEGACY_KEYS];
 
 export function createSettingsStore(sync, local) {
     // sync 写入成功后清掉降级副本，避免旧副本继续遮盖新值。
@@ -34,8 +40,8 @@ export function createSettingsStore(sync, local) {
     // readErrors 必须回传给调用方，否则读失败与“用户没配过”在界面上无法区分。
     async function load() {
         const [localResult, syncResult] = await Promise.allSettled([
-            local.get(SETTINGS_KEYS),
-            sync.get(SETTINGS_KEYS)
+            local.get(READ_KEYS),
+            sync.get(READ_KEYS)
         ]);
         const syncData = syncResult.status === 'fulfilled' ? syncResult.value : {};
         const localData = localResult.status === 'fulfilled' ? localResult.value : {};

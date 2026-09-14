@@ -151,16 +151,61 @@ function isValidEmail(value) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizeEmail(value));
 }
 
-// 校验输入框内容，空值视为“清空默认邮箱”的合法操作
-function validateEmailInput(raw) {
-    const value = normalizeEmail(raw);
-    if (!value) {
-        return { ok: true, value: '' };
+// 邮箱列表：第一个元素就是默认邮箱，顺序即优先级。
+// 用单个数组而不是“列表 + 单独的 default 字段”，可以避免出现
+// “默认项不在列表里”这种不一致状态。
+function dedupeEmails(addresses) {
+    const result = [];
+    for (const address of addresses) {
+        if (!result.some((existing) => existing.toLowerCase() === address.toLowerCase())) {
+            result.push(address);
+        }
     }
-    if (!isValidEmail(value)) {
-        return { ok: false, value, message: 'Invalid email address' };
+    return result;
+}
+
+// 把存储里的数据整理成邮箱列表，兼容旧版本只存一个 defaultEmail 的情况
+function normalizeEmailList(raw) {
+    const stored = raw && Array.isArray(raw.emails) ? raw.emails : null;
+    if (stored) {
+        return dedupeEmails(stored.map(normalizeEmail).filter(Boolean));
     }
-    return { ok: true, value };
+
+    // 只有 emails 字段不存在（旧数据）时才迁移。已经存在时即使为空也不再迁移，
+    // 否则用户清空邮箱后，残留的 defaultEmail 会把邮箱“复活”。
+    const legacy = normalizeEmail(raw && raw.defaultEmail);
+    return legacy ? [legacy] : [];
+}
+
+// 把设置页里编辑中的行整理成邮箱列表。rows: [{ address, isDefault }]
+function buildEmailList(rows) {
+    const markedDefault = (rows || []).find((row) => row && row.isDefault);
+    const defaultAddress = markedDefault ? normalizeEmail(markedDefault.address) : '';
+
+    const emails = [];
+    for (const row of rows || []) {
+        const address = normalizeEmail(row && row.address);
+        if (!address) continue;
+        if (!isValidEmail(address)) {
+            return { ok: false, message: `Invalid email address: ${address}` };
+        }
+        if (!emails.some((existing) => existing.toLowerCase() === address.toLowerCase())) {
+            emails.push(address);
+        }
+    }
+
+    if (emails.length === 0) {
+        return { ok: true, emails: [], message: '' };
+    }
+
+    // 被标记为默认的邮箱排到第一位；找不到（未选、或那一行是空的）就保持原顺序
+    const index = emails.findIndex((address) => address.toLowerCase() === defaultAddress.toLowerCase());
+    if (index > 0) {
+        const [picked] = emails.splice(index, 1);
+        emails.unshift(picked);
+    }
+
+    return { ok: true, emails, message: '' };
 }
 
 // 在 core.js 文件末尾添加以下导出语句
@@ -172,5 +217,6 @@ export {
     copyToClipboard,
     normalizeEmail,
     isValidEmail,
-    validateEmailInput
+    normalizeEmailList,
+    buildEmailList
 };

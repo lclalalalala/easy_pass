@@ -86,6 +86,17 @@
             margin-right: 8px;
         }
 
+        .email-select {
+            min-height: 44px;
+            padding: 8px 12px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 14px;
+            color: var(--text-primary);
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+        }
+
         .copy-btn {
             padding: 6px;
             min-width: 44px;
@@ -166,7 +177,8 @@
         <div class="display-group" id="emailGroup" style="display: none;">
             <div class="display-header">Default Email</div>
             <div class="display-content">
-                <div id="email" class="display-item display-value"></div>
+                <div id="emailEmpty" class="display-item display-value">No default email set</div>
+                <select id="emailSelect" class="email-select display-value"></select>
                 <button id="copyEmailBtn" class="copy-btn">
                     <svg class="icon" viewBox="0 0 24 24">
                         <path

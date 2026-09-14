@@ -1,4 +1,11 @@
-import { extractMainDomain, executePasswordFunction, generateDefaultUsername, generateDefaultPassword, copyToClipboard } from './core.js';
+import {
+    extractMainDomain,
+    executePasswordFunction,
+    generateDefaultUsername,
+    generateDefaultPassword,
+    copyToClipboard,
+    normalizeEmailList
+} from './core.js';
 import { createSettingsStore } from './storage.js';
 
 // 获取当前标签页信息并生成用户名和密码
@@ -88,20 +95,32 @@ document.addEventListener('DOMContentLoaded', async function () {
             document.getElementById('mainDomain').textContent = 'Failed to get domain';
         }
 
-        // 默认邮箱（全局设置，不随网站变化）。始终保留这一行：整行隐藏在设置前
+        // 默认邮箱列表（全局设置，不随网站变化）。始终保留这一行：整行隐藏在设置前
         // 用户根本不知道有这个功能，所以未设置时也要显示并给出说明。
-        const defaultEmail = data.defaultEmail || '';
-        const emailValue = document.getElementById('email');
+        const emails = normalizeEmailList(data);
+        const emailGroup = document.getElementById('emailGroup');
+        const emailSelect = document.getElementById('emailSelect');
+        const emailEmpty = document.getElementById('emailEmpty');
         const emailCopyBtn = document.getElementById('copyEmailBtn');
 
-        document.getElementById('emailGroup').style.display = '';
-        if (defaultEmail) {
-            emailValue.textContent = defaultEmail;
-            emailValue.style.color = '';
+        emailGroup.style.display = '';
+        emailSelect.replaceChildren();
+        if (emails.length > 0) {
+            for (const address of emails) {
+                const option = document.createElement('option');
+                option.value = address;
+                option.textContent = address;
+                emailSelect.appendChild(option);
+            }
+            // 约定默认邮箱排在第一位，所以直接选中它
+            emailSelect.value = emails[0];
+            emailSelect.style.display = '';
+            emailEmpty.style.display = 'none';
             emailCopyBtn.style.display = '';
         } else {
-            emailValue.textContent = 'No default email set';
-            emailValue.style.color = '#999';
+            emailEmpty.textContent = 'No default email set';
+            emailEmpty.style.display = '';
+            emailSelect.style.display = 'none';
             // 没有邮箱可复制时不要把提示文字复制出去
             emailCopyBtn.style.display = 'none';
         }
@@ -136,7 +155,7 @@ document.getElementById('copyPasswordBtn').addEventListener('click', function ()
 
 // 复制默认邮箱按钮点击事件
 document.getElementById('copyEmailBtn').addEventListener('click', function () {
-    const email = document.getElementById('email').textContent;
+    const email = document.getElementById('emailSelect').value;
     copyWithNotification(email, 'Email copied to clipboard');
 });
 
