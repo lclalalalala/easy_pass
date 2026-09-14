@@ -7,9 +7,9 @@
 
 export const SETTINGS_KEYS = ['emails', 'passwordFunction', 'usernameFunction'];
 
-// 旧版本把邮箱存在单个 defaultEmail 里。只读出来做一次性迁移，不再写入；
-// 保留它也不会让邮箱“复活”，因为 emails 字段一旦存在就不会再走迁移分支。
-export const LEGACY_KEYS = ['defaultEmail'];
+// 旧版本把邮箱存在单个 defaultEmail 里。读出来做一次性迁移，
+// 迁移完成后的首次保存会把它清掉，不让它一直同步在用户账号里。
+const LEGACY_KEYS = ['defaultEmail'];
 
 const READ_KEYS = [...SETTINGS_KEYS, ...LEGACY_KEYS];
 
@@ -24,6 +24,18 @@ export function createSettingsStore(sync, local) {
         }
     }
 
+    // 迁移完成后清掉旧版本的键，否则它会一直被 Chrome 同步在账号里。
+    // 同样是尽力而为：清不掉也不该让保存失败。
+    async function clearLegacyKeys() {
+        for (const area of [sync, local]) {
+            try {
+                await area.remove(LEGACY_KEYS);
+            } catch (cleanupError) {
+                console.warn('清除旧版本的键失败:', cleanupError);
+            }
+        }
+    }
+
     async function save(settings) {
         try {
             await sync.set(settings);
@@ -32,6 +44,7 @@ export function createSettingsStore(sync, local) {
             await local.set(settings);
             return { backend: 'local', syncError };
         }
+        await clearLegacyKeys();
         await clearFallback();
         return { backend: 'sync' };
     }

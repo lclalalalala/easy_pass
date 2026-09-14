@@ -174,16 +174,32 @@ test('load also reads the legacy email key so old settings can be migrated', asy
     assert.deepEqual((await store.load()).data, { defaultEmail: 'old@x.com' });
 });
 
-test('save only writes the current settings keys, not the legacy one', async () => {
+test('save clears the legacy email key now that the settings are migrated', async () => {
     const sync = fakeArea({ defaultEmail: 'old@x.com' });
-    const store = createSettingsStore(sync, fakeArea());
+    const local = fakeArea({ defaultEmail: 'old@x.com' });
+    const store = createSettingsStore(sync, local);
 
     await store.save({ emails: ['new@x.com'], passwordFunction: '', usernameFunction: '' });
 
     assert.deepEqual(sync.data, {
-        defaultEmail: 'old@x.com',
         emails: ['new@x.com'],
         passwordFunction: '',
         usernameFunction: ''
     });
+    assert.deepEqual(local.data, {});
+});
+
+test('save still succeeds when the legacy key cannot be cleared', async () => {
+    const sync = fakeArea({ defaultEmail: 'old@x.com' });
+    sync.remove = () => Promise.reject(new Error('remove unavailable'));
+    const store = createSettingsStore(sync, fakeArea());
+
+    const realWarn = console.warn;
+    console.warn = () => {};
+    try {
+        const result = await store.save({ emails: ['new@x.com'], passwordFunction: '', usernameFunction: '' });
+        assert.equal(result.backend, 'sync');
+    } finally {
+        console.warn = realWarn;
+    }
 });
