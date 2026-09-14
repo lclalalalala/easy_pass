@@ -3,7 +3,6 @@
   "version": "1.2.0",
   "description": "A Chrome browser extension that generates passwords based on the current website.",
   "type": "module",
-  "main": "src/content.js",
   "scripts": {
     "test": "node --test",
     "test:watch": "node --test --watch",
