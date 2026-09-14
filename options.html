@@ -41,6 +41,24 @@
             font-family: monospace;
         }
 
+        .rule-example {
+            margin: 0 0 6px 0;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .rule-example code {
+            background-color: #f1f1f1;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 13px;
+            color: #333;
+            /* 点一下就能整段选中，方便复制后改 */
+            -webkit-user-select: all;
+            user-select: all;
+        }
+
         .email-row {
             display: flex;
             align-items: center;
@@ -162,12 +180,14 @@
 
     <div class="section">
         <label for="usernameFunction" style="margin-top: 15px;">Enter Username Generation Rule:</label>
-        <textarea id="usernameFunction"
-            placeholder="Example: user_{{1_2L}}_{{3_4U}}"></textarea>
+        <p class="rule-example">Example (click to select, then paste and edit):
+            <code>user_{{1_2L}}_{{3_4U}}</code></p>
+        <textarea id="usernameFunction"></textarea>
 
         <label for="passwordFunction">Enter Password Generation Rule:</label>
-        <textarea id="passwordFunction"
-            placeholder="Example: pass_{{1_2L}}_{{3_4U}}"></textarea>
+        <p class="rule-example">Example (click to select, then paste and edit):
+            <code>pass_{{1_2L}}_{{3_4U}}</code></p>
+        <textarea id="passwordFunction"></textarea>
 
 
 

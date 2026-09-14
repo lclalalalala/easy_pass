@@ -2,6 +2,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
+import fs from 'node:fs';
+
+import { executePasswordFunction } from './core.js';
 import { installDom, installBrowser, loadPage, flush, findByClassName } from '../test-helpers/dom-double.js';
 
 const OPTIONS_HTML = new URL('../options.html', import.meta.url);
@@ -101,6 +104,40 @@ test('saving rejects an invalid address without writing anything', async () => {
     // 存的是改动前的值，说明这次保存根本没写进去
     assert.deepEqual(page.sync.data.emails, ['a@x.com']);
     assert.match(page.alerts[0], /nope/);
+});
+
+// 帮助文案和实现很容易悄无声息地脱节，这里拿真实实现把文档里的例子跑一遍
+test('every example shown in options.html is a rule that actually works', () => {
+    const html = fs.readFileSync(OPTIONS_HTML, 'utf8');
+
+    // 输入框标签下面那行可复制的示例
+    const examples = [...html.matchAll(/<p class="rule-example">([\s\S]*?)<\/p>/g)]
+        .map((block) => block[1].match(/<code>([^<]+)<\/code>/))
+        .filter(Boolean)
+        .map((match) => match[1]);
+
+    assert.ok(examples.length >= 2, 'expected a copyable example for both rule boxes');
+    for (const example of examples) {
+        assert.doesNotMatch(
+            executePasswordFunction(example, { domain: 'example' }),
+            /\{\{/,
+            `example does not expand: ${example}`
+        );
+    }
+
+    // 帮助区里 “规则 -> 结果” 的配对必须和实现一致（示例域名是 www.example.com）
+    const pairs = [...html.matchAll(
+        /Generation Rule:<\/strong><code[^>]*>([^<]*)<\/code><br>\s*<strong[^>]*>Generation Result:<\/strong><code[^>]*>([^<]*)<\/code>/g
+    )];
+
+    assert.ok(pairs.length > 0, 'expected documented rule/result pairs');
+    for (const pair of pairs) {
+        assert.equal(
+            executePasswordFunction(pair[1].trim(), { domain: 'example' }),
+            pair[2].trim(),
+            `documented result is wrong for ${pair[1].trim()}`
+        );
+    }
 });
 
 test('saving an empty list clears the stored emails', async () => {
