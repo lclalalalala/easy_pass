@@ -19,8 +19,8 @@ go to web store search and install
 
 ### Basic Usage
 1. Click the extension icon in the browser toolbar
-2. The extension will automatically generate a password and copy it to clipboard
-3. The password will be displayed in the popup window
+2. The extension generates a password and copies it to the clipboard
+3. The password is displayed in the popup window. If your settings could not be read, or the page has no website domain, it says so and copies nothing
 
 ### Emails
 
