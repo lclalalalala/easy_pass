@@ -94,19 +94,8 @@ document.addEventListener('DOMContentLoaded', async function () {
             emailGroup.style.display = 'none';
         }
 
-        // 自动复制密码到剪贴板
-        try {
-            await copyToClipboard(password);
-        } catch (copyError) {
-            console.log('复制到剪贴板失败:', copyError);
-        }
-        const notification = document.getElementById('notification');
-        notification.textContent = 'Password copied to clipboard';
-        notification.classList.add('show');
-        setTimeout(() => {
-            notification.textContent = '';
-            notification.classList.remove('show');
-        }, 10000);
+        // 自动复制密码到剪贴板（失败时必须如实告知，否则用户会以为已经复制成功）
+        await copyWithNotification(password, 'Password copied to clipboard');
 
     } catch (error) {
         console.error('错误:', error);
@@ -145,23 +134,24 @@ document.getElementById('settingsBtn').addEventListener('click', function () {
 });
 
 
-// 复制文本到剪贴板并显示通知
-async function copyWithNotification(text, message) {
-    try {
-        await copyToClipboard(text);
-        showNotification(message);
-    } catch (copyError) {
-        console.error(`复制失败:`, copyError);
-        showNotification('复制失败，请手动复制');
-    }
+// 复制文本到剪贴板并显示通知。copyToClipboard 不抛异常、只返回成功与否，
+// 所以这里必须检查返回值，否则复制失败也会显示“已复制”。
+async function copyWithNotification(text, successMessage) {
+    const succeeded = await copyToClipboard(text);
+    showNotification(succeeded ? successMessage : 'Copy failed, please copy manually');
 }
+
+let notificationTimer;
 
 // 显示通知
 function showNotification(message) {
     const notification = document.getElementById('notification');
     notification.textContent = message;
     notification.classList.add('show');
-    setTimeout(() => {
+
+    // 只保留最新的计时器，否则旧计时器会把刚显示的新提示提前清掉
+    clearTimeout(notificationTimer);
+    notificationTimer = setTimeout(() => {
         notification.textContent = '';
         notification.classList.remove('show');
     }, 10000);
