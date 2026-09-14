@@ -50,7 +50,7 @@ We may update this Privacy Policy from time to time to reflect changes in our pr
 
 ## Contact
 
-If you have any questions or concerns about this Privacy Policy or the Extension's privacy practices, please contact us at [Insert Contact Information].
+If you have any questions or concerns about this Privacy Policy or the Extension's privacy practices, please contact us at lucy.awesome@gmail.com.
 
 ## Consent
 
