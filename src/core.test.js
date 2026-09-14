@@ -49,10 +49,34 @@ test('rule: index 0 does not exist because indexing starts at 1', () => {
     assert.equal(executePasswordFunction('{{0L}}', vars), '{{0L}}');
 });
 
-test('rule: an out-of-range index stays visible instead of turning into nothing', () => {
-    assert.equal(executePasswordFunction('{{99U}}', vars), '{{99U}}');
-    assert.equal(executePasswordFunction('{{1_99U}}', vars), '{{1_99U}}');
-    assert.equal(executePasswordFunction('{{-99L}}', vars), '{{-99L}}');
+test('rule: an index past the end is clamped to the last character', () => {
+    assert.equal(executePasswordFunction('{{99U}}', vars), 'E');
+});
+
+test('rule: a range running past the end is truncated, not rejected', () => {
+    assert.equal(executePasswordFunction('{{1_99U}}', vars), 'EXAMPLE');
+});
+
+test('rule: an index past the start is clamped to the first character', () => {
+    assert.equal(executePasswordFunction('{{-99L}}', vars), 'e');
+});
+
+// 规则是全局的，各站域名长度不同：短域名必须也能算出可用密码，
+// 否则一条规则就没办法在所有网站通用
+const shortDomains = [
+    ['x', 'x'],
+    ['t', 't'],
+    ['qq', 'qq']
+];
+
+for (const [domain, expected] of shortDomains) {
+    test(`rule: a range wider than the domain "${domain}" still works`, () => {
+        assert.equal(executePasswordFunction('pass_{{1_3L}}', { domain }), `pass_${expected}`);
+    });
+}
+
+test('rule: a reference on an empty domain stays visible', () => {
+    assert.equal(executePasswordFunction('{{1U}}', { domain: '' }), '{{1U}}');
 });
 
 test('rule: an unknown name stays visible', () => {

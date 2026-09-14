@@ -31,14 +31,14 @@ const INDEX_EXPRESSION_PATTERN = /^([+-]?\d+)(?:_([+-]?\d+))?([UL])?$/;
 
 // 1-based 索引换算成 0-based 偏移；越界（含根本不存在的“第 0 个”）返回 null
 function indexToOffset(index, length) {
-    if (index === 0) {
+    // 域名为空时没有字符可取；1-based 里也不存在第 0 个
+    if (length === 0 || index === 0) {
         return null;
     }
     const offset = index > 0 ? index - 1 : length + index;
-    if (offset < 0 || offset >= length) {
-        return null;
-    }
-    return offset;
+    // 越出两端时截断到边界（像 Python 切片 s[0:3]）：规则是全局的、各站域名长度不同，
+    // x.com 这种只有 1 个字符的主域名也必须能算出可用的密码
+    return Math.min(Math.max(offset, 0), length - 1);
 }
 
 function applyCase(text, caseType) {
