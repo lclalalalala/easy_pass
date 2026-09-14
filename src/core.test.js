@@ -3,11 +3,77 @@ import assert from 'node:assert/strict';
 
 import {
     extractMainDomain,
+    executePasswordFunction,
     normalizeEmail,
     isValidEmail,
     normalizeEmailList,
     buildEmailList
 } from './core.js';
+
+// 生成规则引用语法：{{...}} 里写索引表达式，索引是 1-based
+const vars = { domain: 'example' };
+
+test('rule: {{1L}} takes the first character, lowercased', () => {
+    assert.equal(executePasswordFunction('{{1L}}', vars), 'e');
+});
+
+test('rule: {{-1U}} takes the last character, uppercased', () => {
+    assert.equal(executePasswordFunction('{{-1U}}', vars), 'E');
+});
+
+test('rule: the case letter is optional', () => {
+    assert.equal(executePasswordFunction('{{1}}', vars), 'e');
+});
+
+test('rule: {{1_3U}} takes an inclusive range', () => {
+    assert.equal(executePasswordFunction('{{1_3U}}', vars), 'EXA');
+});
+
+test('rule: {{-3_-1L}} takes a range counted from the end', () => {
+    assert.equal(executePasswordFunction('{{-3_-1L}}', vars), 'ple');
+});
+
+test('rule: a mixed range can span the whole domain', () => {
+    assert.equal(executePasswordFunction('{{1_-1U}}', vars), 'EXAMPLE');
+});
+
+test('rule: a reversed range is normalised', () => {
+    assert.equal(executePasswordFunction('{{3_1U}}', vars), 'EXA');
+});
+
+test('rule: {{domain}} still expands to the whole domain', () => {
+    assert.equal(executePasswordFunction('{{domain}}', vars), 'example');
+});
+
+test('rule: index 0 does not exist because indexing starts at 1', () => {
+    assert.equal(executePasswordFunction('{{0L}}', vars), '{{0L}}');
+});
+
+test('rule: an out-of-range index stays visible instead of turning into nothing', () => {
+    assert.equal(executePasswordFunction('{{99U}}', vars), '{{99U}}');
+    assert.equal(executePasswordFunction('{{1_99U}}', vars), '{{1_99U}}');
+    assert.equal(executePasswordFunction('{{-99L}}', vars), '{{-99L}}');
+});
+
+test('rule: an unknown name stays visible', () => {
+    assert.equal(executePasswordFunction('{{nope}}', vars), '{{nope}}');
+});
+
+test('rule: the old bracket syntax is no longer substituted', () => {
+    assert.equal(executePasswordFunction('{{[domain][0][2][U]}}', vars), '{{[domain][0][2][U]}}');
+});
+
+test('rule: references work inside a longer rule', () => {
+    assert.equal(executePasswordFunction('pass_{{1_2L}}_{{-1U}}', vars), 'pass_ex_E');
+});
+
+test('rule: whitespace inside the braces is tolerated', () => {
+    assert.equal(executePasswordFunction('{{ 1U }}', vars), 'E');
+});
+
+test('rule: plain text without references is untouched', () => {
+    assert.equal(executePasswordFunction('literal_%@!123', vars), 'literal_%@!123');
+});
 
 test('extractMainDomain returns the registrable domain label', () => {
     assert.equal(extractMainDomain('www.google.com'), 'google');

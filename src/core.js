@@ -20,59 +20,62 @@ function extractMainDomain(hostname) {
 
 
 
-// 预定义字符串操作函数
-function stringOperation(operationStr, variables) {
-    // Input Example:
-    // {{[domain][0][2][U]}} // 获取第0～2个字符，并大写
-    // {{[domain][-2][-1][L]}} // 获取倒数第1～2个字符，并小写
-    // {{[domain][1][3][U]}} // 获取倒数第1～3个字符，并大写
+// 生成规则的引用语法（都写在 {{ }} 里）：
+//   {{domain}}   整个主域名
+//   {{1L}}       第 1 个字符，小写（不写 U/L 就原样保留）
+//   {{-1U}}      倒数第 1 个字符，大写
+//   {{1_3U}}     第 1~3 个字符，大写（_ 分隔，闭区间）
+// 索引是 1-based：1 是第一个字符；负数从末尾数，-1 是最后一个字符。
+const REFERENCE_PATTERN = /\{\{([^{}]*)\}\}/g;
+const INDEX_EXPRESSION_PATTERN = /^([+-]?\d+)(?:_([+-]?\d+))?([UL])?$/;
 
-    try {
-        // 使用正则表达式一次性提取所有参数
-        const match = operationStr.match(/\{\{\[(\w+)\]\[(-?\d+)\]\[(-?\d+)\]\[(U|L)\]\}\}/);
-
-        if (!match) {
-            throw new Error('Invalid operation format');
-        }
-
-        const variableName = match[1];
-        const startIndex = parseInt(match[2]);
-        const endIndex = parseInt(match[3]);
-        const operationType = match[4];
-
-        const variableValue = variables[variableName] || '';
-
-        // 处理字符串切片
-        let slicedString;
-        if (startIndex >= 0 && endIndex >= 0) {
-            // 正数索引：从start到end（包含end）
-            slicedString = variableValue.substring(startIndex, endIndex + 1);
-        } else if (startIndex < 0 && endIndex < 0) {
-            // 负数索引：从倒数start到倒数end
-            const actualStart = Math.max(0, variableValue.length + startIndex);
-            const actualEnd = Math.min(variableValue.length, variableValue.length + endIndex + 1);
-            slicedString = variableValue.substring(actualStart, actualEnd);
-        } else {
-            // 混合索引不支持，返回空字符串
-            slicedString = '';
-        }
-
-        // 处理大小写转换
-        let operationResult;
-        if (operationType === 'U') {
-            operationResult = slicedString.toUpperCase();
-        } else if (operationType === 'L') {
-            operationResult = slicedString.toLowerCase();
-        } else {
-            operationResult = slicedString;
-        }
-
-        return operationResult;
-
-    } catch (error) {
-        console.error('字符串操作错误:', error);
-        return '';
+// 1-based 索引换算成 0-based 偏移；越界（含根本不存在的“第 0 个”）返回 null
+function indexToOffset(index, length) {
+    if (index === 0) {
+        return null;
     }
+    const offset = index > 0 ? index - 1 : length + index;
+    if (offset < 0 || offset >= length) {
+        return null;
+    }
+    return offset;
+}
+
+function applyCase(text, caseType) {
+    if (caseType === 'U') return text.toUpperCase();
+    if (caseType === 'L') return text.toLowerCase();
+    return text;
+}
+
+// 解析 {{ }} 里的内容；解析不出来返回 null，由调用方保留原文。
+// 保留原文而不是变成空串，是为了让写错的规则一眼可见，
+// 而不是悄悄生成一个“看起来正常”的错误密码。
+function resolveReference(expression, variables) {
+    const trimmed = expression.trim();
+    const indexed = trimmed.match(INDEX_EXPRESSION_PATTERN);
+
+    if (indexed) {
+        const domain = variables.domain == null ? '' : String(variables.domain);
+        const from = indexToOffset(parseInt(indexed[1], 10), domain.length);
+        const to = indexed[2] === undefined
+            ? from
+            : indexToOffset(parseInt(indexed[2], 10), domain.length);
+
+        if (from === null || to === null) {
+            return null;
+        }
+
+        // 反向区间（如 3_1）按先后顺序归一，不报错
+        const start = Math.min(from, to);
+        const end = Math.max(from, to);
+        return applyCase(domain.substring(start, end + 1), indexed[3] || '');
+    }
+
+    if (trimmed in variables) {
+        return variables[trimmed] == null ? '' : String(variables[trimmed]);
+    }
+
+    return null;
 }
 
 // 安全的函数执行方法
@@ -81,14 +84,10 @@ function executePasswordFunction(functionText, variables) {
         // 使用安全的模板字符串替换变量
         let result = functionText;
 
-        // 首先处理字符串操作 {{[variable][start][end][case]}}
-        result = result.replace(/\{\{\[(\w+)\]\[(-?\d+)\]\[(-?\d+)\]\[(U|L)\]\}\}/g, (match) => {
-            return stringOperation(match, variables);
-        });
-
-        // 然后替换所有普通{{xxx}}格式的变量引用
-        result = result.replace(/\{\{(\w+)\}\}/g, (match, variableName) => {
-            return variables[variableName] || '';
+        // 展开 {{...}} 引用：索引表达式和变量名都写在这里
+        result = result.replace(REFERENCE_PATTERN, (match, expression) => {
+            const value = resolveReference(expression, variables);
+            return value === null ? match : value;
         });
 
         // 支持简单的数学运算（安全版本）
