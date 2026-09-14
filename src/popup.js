@@ -115,10 +115,6 @@ document.getElementById('copyPasswordBtn').addEventListener('click', function ()
     copyWithNotification(password, 'Password copied to clipboard');
 });
 
-// 在DOMContentLoaded中的自动复制
-// 自动复制密码到剪贴板
-copyWithNotification(password, 'Password copied to clipboard');
-
 // 设置按钮点击事件
 document.getElementById('settingsBtn').addEventListener('click', function () {
     try {
