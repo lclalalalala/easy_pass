@@ -47,8 +47,9 @@ document.addEventListener('DOMContentLoaded', async function () {
         let password = 'Generation failed';
 
         // 检查URL是否有效并提取变量
+        const hasWebsite = Boolean(tab.url && tab.url.startsWith('http'));
         let variables;
-        if (tab.url && tab.url.startsWith('http')) {
+        if (hasWebsite) {
             const url = new URL(tab.url);
             // 提取 hostname
             const mainDomain = extractMainDomain(url.hostname);
@@ -126,13 +127,19 @@ document.addEventListener('DOMContentLoaded', async function () {
             emailCopyBtn.style.display = 'none';
         }
 
-        // 自动复制密码到剪贴板（失败时必须如实告知，否则用户会以为已经复制成功）
-        await copyWithNotification(password, 'Password copied to clipboard');
+        // 自动复制只在密码可信时才做。下面两种情况算出来的密码是“假的”：
+        //   - 设置读不到：用的是默认规则，不是用户为该站设定的规则
+        //   - 没有网站域名（chrome:// 等）：根本没有可用于推导的域名
+        // 静默把这种密码放进剪贴板，用户不细看就会粘贴一个错密码。
+        const warning = hasWebsite
+            ? (settingsUnreadable ? 'Could not read saved settings. Nothing was copied.' : '')
+            : 'No website here, so nothing could be generated. Nothing was copied.';
 
-        // 两个存储区域都读不到时，界面上的默认值并不是用户的配置，必须提示，
-        // 否则用户会以为自己的设置丢了 / 生效了
-        if (settingsUnreadable) {
-            showNotification('Could not read saved settings');
+        if (warning) {
+            showNotification(warning);
+        } else {
+            // 复制失败时必须如实告知，否则用户会以为已经复制成功
+            await copyWithNotification(password, 'Password copied to clipboard');
         }
 
     } catch (error) {

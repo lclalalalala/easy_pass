@@ -134,10 +134,27 @@ test('popup flags settings it could not read instead of silently showing default
     const popup = await openPopup({ storage: { emails: ['me@example.com'] }, storageReadFails: true });
 
     assert.match(popup.text('notification'), /could not read/i);
+    // 用默认规则算出的密码不是该站真实密码，绝不能自动进剪贴板
+    assert.deepEqual(popup.copied, []);
 });
 
 test('popup also flags a partial read failure, not just a total one', async () => {
     const popup = await openPopup({ storage: { emails: ['me@example.com'] }, syncReadFails: true });
 
     assert.match(popup.text('notification'), /could not read/i);
+    assert.deepEqual(popup.copied, []);
+});
+
+test('popup does not auto-copy anything on a page without a website', async () => {
+    const popup = await openPopup({ tabUrl: 'chrome://extensions' });
+
+    assert.deepEqual(popup.copied, []);
+    assert.match(popup.text('notification'), /no website/i);
+});
+
+test('popup still copies normally when there is a website and settings', async () => {
+    const popup = await openPopup({ storage: { emails: ['me@example.com'] } });
+
+    assert.equal(popup.copied[0], 'google!@#');
+    assert.equal(popup.text('notification'), 'Password copied to clipboard');
 });
