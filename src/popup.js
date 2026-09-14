@@ -1,4 +1,5 @@
 import { extractMainDomain, executePasswordFunction, generateDefaultUsername, generateDefaultPassword, copyToClipboard } from './core.js';
+import { createSettingsStore } from './storage.js';
 
 // 获取当前标签页信息并生成用户名和密码
 document.addEventListener('DOMContentLoaded', async function () {
@@ -22,7 +23,8 @@ document.addEventListener('DOMContentLoaded', async function () {
         // 获取存储的生成函数
         let data;
         try {
-            data = await chrome.storage.sync.get(['passwordFunction', 'usernameFunction', 'defaultEmail']);
+            const store = createSettingsStore(chrome.storage.sync, chrome.storage.local);
+            data = await store.load();
         } catch (storageError) {
             console.log('Storage API不可用，使用默认函数');
             // 在普通网页中测试时使用空数据
