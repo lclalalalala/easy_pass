@@ -34,10 +34,10 @@ Emails are deliberately not derived from the website: the same list is used ever
 
 ### Custom Password Generation
 1. Click the "Set Generation Rules" button in the popup window
-2. Enter a password generation function in the settings page
-3. Use the following available variables:
-   - `{{domain}}` - Main domain name of the URL
+2. Write your generation rules on the settings page; each box shows a copyable example you can adapt
+3. Reference the current website with `{{domain}}` (the whole main domain) or with character indexes such as `{{1L}}` and `{{1_3U}}` - see Notes below for the full syntax
 
+The extension derives the password and never stores it, so the rule is the only thing you need to remember.
 
 ### Debugging Function
 1. Enter a function in the settings page and click the "Test Generation Rule" button
