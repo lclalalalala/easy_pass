@@ -170,6 +170,16 @@ test('popup does not auto-copy anything on a page without a website', async () =
     assert.match(popup.text('notification'), /no website/i);
 });
 
+test('popup treats a host it cannot resolve as unusable', async () => {
+    // hostname "www." 会退化成空，主域名取不出来
+    const popup = await openPopup({ tabUrl: 'http://www./' });
+
+    assert.equal(popup.text('mainDomain'), 'Failed to get domain');
+    assert.doesNotMatch(popup.text('password'), /null/);
+    assert.deepEqual(popup.copied, []);
+    assert.match(popup.text('notification'), /domain/i);
+});
+
 test('popup still copies normally when there is a website and settings', async () => {
     const popup = await openPopup({ storage: { emails: ['me@example.com'] } });
 

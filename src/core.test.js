@@ -4,6 +4,8 @@ import assert from 'node:assert/strict';
 import {
     extractMainDomain,
     executePasswordFunction,
+    generateDefaultPassword,
+    generateDefaultUsername,
     normalizeEmail,
     isValidEmail,
     normalizeEmailList,
@@ -77,6 +79,12 @@ for (const [domain, expected] of shortDomains) {
 
 test('rule: a reference on an empty domain stays visible', () => {
     assert.equal(executePasswordFunction('{{1U}}', { domain: '' }), '{{1U}}');
+});
+
+// 取不到主域名时曾经拼出 "null!@#" 这种密码
+test('default generators never print null when there is no domain', () => {
+    assert.equal(generateDefaultPassword(null), '!@#');
+    assert.equal(generateDefaultUsername(undefined), '_!@#');
 });
 
 test('rule: an unknown name stays visible', () => {

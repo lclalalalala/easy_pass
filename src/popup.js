@@ -48,13 +48,17 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         // 检查URL是否有效并提取变量
         const hasWebsite = Boolean(tab.url && tab.url.startsWith('http'));
+        let domainResolved = false;
         let variables;
+
         if (hasWebsite) {
             const url = new URL(tab.url);
-            // 提取 hostname
+            // 提取 hostname。少数 hostname（如 "www."）会退化成空，主域名取不出来
             const mainDomain = extractMainDomain(url.hostname);
+            domainResolved = Boolean(mainDomain);
+            // 取不到时用空串：引用会原样保留，一眼能看出没生成成功
             variables = {
-                domain: mainDomain,
+                domain: mainDomain || '',
             };
         } else {
             // 使用默认值
@@ -127,13 +131,19 @@ document.addEventListener('DOMContentLoaded', async function () {
             emailCopyBtn.style.display = 'none';
         }
 
-        // 自动复制只在密码可信时才做。下面两种情况算出来的密码是“假的”：
+        // 自动复制只在密码可信时才做。下面三种情况算出来的密码是“假的”，
+        // 静默放进剪贴板的话，用户不细看就会粘贴一个错密码：
+        //   - 没有网站（chrome:// 等）：根本没有可用于推导的域名
+        //   - 拿不到主域名：同样没有可用于推导的域名
         //   - 设置读不到：用的是默认规则，不是用户为该站设定的规则
-        //   - 没有网站域名（chrome:// 等）：根本没有可用于推导的域名
-        // 静默把这种密码放进剪贴板，用户不细看就会粘贴一个错密码。
-        const warning = hasWebsite
-            ? (settingsUnreadable ? 'Could not read saved settings. Nothing was copied.' : '')
-            : 'No website here, so nothing could be generated. Nothing was copied.';
+        let warning = '';
+        if (!hasWebsite) {
+            warning = 'No website here, so nothing could be generated. Nothing was copied.';
+        } else if (!domainResolved) {
+            warning = 'Could not work out the website domain. Nothing was copied.';
+        } else if (settingsUnreadable) {
+            warning = 'Could not read saved settings. Nothing was copied.';
+        }
 
         if (warning) {
             showNotification(warning);

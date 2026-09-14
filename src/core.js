@@ -100,15 +100,16 @@ function executePasswordFunction(functionText, variables) {
 }
 
 // 默认密码生成函数（域名 + 自定义字符 + 随机数字）
+// domain 用 ?? '' 兑底：取不到主域名时曾经拼出 "null!@#" 这种密码
 function generateDefaultPassword(domain) {
     const customChar = '!@#'; // 自定义字符
-    return `${domain}${customChar}`;
+    return `${domain ?? ''}${customChar}`;
 }
 
 // 默认用户名生成函数（域名 + 随机字符）
 function generateDefaultUsername(domain) {
     const customChar = '!@#'; // 自定义字符
-    return `${domain}_${customChar}`;
+    return `${domain ?? ''}_${customChar}`;
 }
 
 // 复制到剪贴板函数
