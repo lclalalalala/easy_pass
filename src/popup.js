@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         // 获取存储的生成函数
         let data;
         try {
-            data = await chrome.storage.sync.get(['passwordFunction', 'usernameFunction']);
+            data = await chrome.storage.sync.get(['passwordFunction', 'usernameFunction', 'defaultEmail']);
         } catch (storageError) {
             console.log('Storage API不可用，使用默认函数');
             // 在普通网页中测试时使用空数据
@@ -82,6 +82,16 @@ document.addEventListener('DOMContentLoaded', async function () {
             document.getElementById('mainDomain').textContent = 'Failed to get domain';
         }
 
+        // 显示默认邮箱（全局设置，不随网站变化，未设置时隐藏整块）
+        const defaultEmail = data.defaultEmail || '';
+        const emailGroup = document.getElementById('emailGroup');
+        if (defaultEmail) {
+            document.getElementById('email').textContent = defaultEmail;
+            emailGroup.style.display = '';
+        } else {
+            emailGroup.style.display = 'none';
+        }
+
         // 自动复制密码到剪贴板
         try {
             await copyToClipboard(password);
@@ -113,6 +123,12 @@ document.getElementById('copyUsernameBtn').addEventListener('click', function ()
 document.getElementById('copyPasswordBtn').addEventListener('click', function () {
     const password = document.getElementById('password').textContent;
     copyWithNotification(password, 'Password copied to clipboard');
+});
+
+// 复制默认邮箱按钮点击事件
+document.getElementById('copyEmailBtn').addEventListener('click', function () {
+    const email = document.getElementById('email').textContent;
+    copyWithNotification(email, 'Email copied to clipboard');
 });
 
 // 设置按钮点击事件

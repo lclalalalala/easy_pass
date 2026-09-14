@@ -1,28 +1,38 @@
 
-import { executePasswordFunction } from './core.js';
+import { executePasswordFunction, validateEmailInput } from './core.js';
 
 
 document.addEventListener('DOMContentLoaded', function () {
     loadSavedFunction();
 });
 
-// Save button click event
-document.getElementById('saveBtn').addEventListener('click', function () {
+// Save button click event (settings section)
+document.getElementById('saveBtn').addEventListener('click', saveAll);
+
+// Save button click event (default email section)
+document.getElementById('saveEmailBtn').addEventListener('click', saveAll);
+
+// Persist all settings at once, so both save buttons behave the same
+function saveAll() {
     const passwordFunctionText = document.getElementById('passwordFunction').value.trim();
     const usernameFunctionText = document.getElementById('usernameFunction').value.trim();
+    const emailResult = validateEmailInput(document.getElementById('defaultEmail').value);
 
-    if (passwordFunctionText || usernameFunctionText) {
-        chrome.storage.sync.set({
-            passwordFunction: passwordFunctionText,
-            usernameFunction: usernameFunctionText
-        }, function () {
-            alert('Saved successfully!');
-            updateCurrentFunctionDisplay(passwordFunctionText);
-        });
-    } else {
-        alert('Please enter a password or username generation function');
+    if (!emailResult.ok) {
+        alert(emailResult.message);
+        return;
     }
-});
+
+    chrome.storage.sync.set({
+        defaultEmail: emailResult.value,
+        passwordFunction: passwordFunctionText,
+        usernameFunction: usernameFunctionText
+    }, function () {
+        alert('Saved successfully!');
+        updateCurrentFunctionDisplay(passwordFunctionText);
+        updateCurrentEmailDisplay(emailResult.value);
+    });
+}
 
 // Debug button click event
 document.getElementById('debugBtn').addEventListener('click', async function () {
@@ -93,16 +103,33 @@ document.getElementById('debugBtn').addEventListener('click', async function () 
 
 // Load saved functions
 function loadSavedFunction() {
-    chrome.storage.sync.get(['passwordFunction', 'usernameFunction'], function (result) {
+    chrome.storage.sync.get(['passwordFunction', 'usernameFunction', 'defaultEmail'], function (result) {
         if (result.passwordFunction) {
             document.getElementById('passwordFunction').value = result.passwordFunction;
         }
         if (result.usernameFunction) {
             document.getElementById('usernameFunction').value = result.usernameFunction;
         }
+        if (result.defaultEmail) {
+            document.getElementById('defaultEmail').value = result.defaultEmail;
+        }
         // Update display
         updateCurrentFunctionDisplay(result.passwordFunction);
+        updateCurrentEmailDisplay(result.defaultEmail);
     });
+}
+
+// Update current default email display
+function updateCurrentEmailDisplay(email) {
+    const emailDisplayElement = document.getElementById('currentDefaultEmail');
+
+    if (email) {
+        emailDisplayElement.textContent = email;
+        emailDisplayElement.style.color = '#333';
+    } else {
+        emailDisplayElement.textContent = 'No default email set';
+        emailDisplayElement.style.color = '#999';
+    }
 }
 
 // Update current function display

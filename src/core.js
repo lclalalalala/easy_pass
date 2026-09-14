@@ -128,11 +128,39 @@ async function copyToClipboard(text) {
 }
 
 
+// 默认邮箱处理：邮箱是全局设置，不随网站变化
+function normalizeEmail(value) {
+    if (value === null || value === undefined) {
+        return '';
+    }
+    return String(value).trim();
+}
+
+// 有意保持宽松的校验：只要求 “本地部分@域名.顶级域”，不追求 RFC 5322 完备
+function isValidEmail(value) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizeEmail(value));
+}
+
+// 校验输入框内容，空值视为“清空默认邮箱”的合法操作
+function validateEmailInput(raw) {
+    const value = normalizeEmail(raw);
+    if (!value) {
+        return { ok: true, value: '' };
+    }
+    if (!isValidEmail(value)) {
+        return { ok: false, value, message: 'Invalid email address' };
+    }
+    return { ok: true, value };
+}
+
 // 在 core.js 文件末尾添加以下导出语句
 export {
     extractMainDomain,
     executePasswordFunction,
     generateDefaultPassword,
     generateDefaultUsername,
-    copyToClipboard
+    copyToClipboard,
+    normalizeEmail,
+    isValidEmail,
+    validateEmailInput
 };
