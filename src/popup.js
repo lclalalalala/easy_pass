@@ -88,14 +88,22 @@ document.addEventListener('DOMContentLoaded', async function () {
             document.getElementById('mainDomain').textContent = 'Failed to get domain';
         }
 
-        // 显示默认邮箱（全局设置，不随网站变化，未设置时隐藏整块）
+        // 默认邮箱（全局设置，不随网站变化）。始终保留这一行：整行隐藏在设置前
+        // 用户根本不知道有这个功能，所以未设置时也要显示并给出说明。
         const defaultEmail = data.defaultEmail || '';
-        const emailGroup = document.getElementById('emailGroup');
+        const emailValue = document.getElementById('email');
+        const emailCopyBtn = document.getElementById('copyEmailBtn');
+
+        document.getElementById('emailGroup').style.display = '';
         if (defaultEmail) {
-            document.getElementById('email').textContent = defaultEmail;
-            emailGroup.style.display = '';
+            emailValue.textContent = defaultEmail;
+            emailValue.style.color = '';
+            emailCopyBtn.style.display = '';
         } else {
-            emailGroup.style.display = 'none';
+            emailValue.textContent = 'No default email set';
+            emailValue.style.color = '#999';
+            // 没有邮箱可复制时不要把提示文字复制出去
+            emailCopyBtn.style.display = 'none';
         }
 
         // 自动复制密码到剪贴板（失败时必须如实告知，否则用户会以为已经复制成功）

@@ -128,6 +128,7 @@ test('popup renders the default email and copies it on demand', async () => {
 
     assert.equal(popup.text('email'), 'me@example.com');
     assert.equal(popup.elements.get('emailGroup').style.display, '');
+    assert.notEqual(popup.elements.get('copyEmailBtn').style.display, 'none');
 
     popup.click('copyEmailBtn');
     await flush();
@@ -136,10 +137,14 @@ test('popup renders the default email and copies it on demand', async () => {
     assert.equal(popup.text('notification'), 'Email copied to clipboard');
 });
 
-test('popup hides the email row when no default email is set', async () => {
+test('popup keeps the email row visible and explains itself when nothing is set', async () => {
     const popup = await openPopup({ storage: {} });
 
-    assert.equal(popup.elements.get('emailGroup').style.display, 'none');
+    // 整行隐藏会让用户不知道有这个功能，所以未设置时也要露出这一行
+    assert.notEqual(popup.elements.get('emailGroup').style.display, 'none');
+    assert.match(popup.text('email'), /no default email/i);
+    // 没有邮箱可复制时不要把提示文字复制出去
+    assert.equal(popup.elements.get('copyEmailBtn').style.display, 'none');
 });
 
 test('popup does not claim the password was copied when the clipboard write fails', async () => {
