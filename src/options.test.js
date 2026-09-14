@@ -154,6 +154,22 @@ test('options warns and refuses to save when only the sync read fails', async ()
     assert.deepEqual(page.sync.data.emails, ['a@x.com']);
 });
 
+test('options refuses to save when neither storage area can be read', async () => {
+    const page = await openOptions({
+        storage: { emails: ['a@x.com'] },
+        syncReadFails: true,
+        localReadFails: true
+    });
+
+    assert.match(page.elements.get('currentEmails').textContent, /could not read/i);
+
+    page.click('saveBtn');
+    await flush();
+
+    assert.match(page.alerts[page.alerts.length - 1], /overwrite/i);
+    assert.deepEqual(page.sync.data.emails, ['a@x.com']);
+});
+
 test('debug output is built as text nodes, never as an HTML string', async () => {
     const page = await openOptions({ storage: {} });
     const payload = '<img src=x onerror="alert(1)">';
