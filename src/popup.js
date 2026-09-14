@@ -34,7 +34,8 @@ document.addEventListener('DOMContentLoaded', async function () {
             const store = createSettingsStore(chrome.storage.sync, chrome.storage.local);
             const loaded = await store.load();
             data = loaded.data;
-            settingsUnreadable = loaded.readErrors.sync && loaded.readErrors.local;
+            // 任意一侧读失败都要说：只读到 local 的降级副本时，邮箱/规则可能不是最新的
+            settingsUnreadable = loaded.readErrors.sync || loaded.readErrors.local;
         } catch (storageError) {
             console.log('Storage API不可用，使用默认函数');
             // 在普通网页中测试时使用空数据

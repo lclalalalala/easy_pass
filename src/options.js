@@ -106,6 +106,12 @@ function showEmailRows(rows) {
 
 // Persist all settings at once, so both save buttons behave the same
 async function saveAll() {
+    if (settingsReadFailed) {
+        alert('Cannot save: your saved settings could not be read, so saving now would overwrite them. '
+            + 'Close and reopen this page, then try again.');
+        return;
+    }
+
     const passwordFunctionText = document.getElementById('passwordFunction').value.trim();
     const usernameFunctionText = document.getElementById('usernameFunction').value.trim();
     const emailResult = buildEmailList(readEmailRows());
@@ -206,12 +212,18 @@ document.getElementById('debugBtn').addEventListener('click', function () {
     renderDebugResult(blocks, false);
 });
 
+// 读失败时禁止保存：界面上的空值并不代表用户的配置，
+// 这时候保存会把“没读到”当成“没配过”，直接覆盖掉真实设置。
+let settingsReadFailed = false;
+
 // Load saved functions
 async function loadSavedFunction() {
     const { data: result, readErrors } = await store.load();
 
-    // 两个存储区域都读不到时，不能让 "No ... set" 冒充成“用户还没配过”
-    if (readErrors.sync && readErrors.local) {
+    // 任意一侧读失败都可能丢数据（sync 挂了但 local 是空的同样危险），
+    // 所以不能让 "No ... set" 冒充成“用户还没配过”
+    if (readErrors.sync || readErrors.local) {
+        settingsReadFailed = true;
         showStorageReadWarning();
         return;
     }

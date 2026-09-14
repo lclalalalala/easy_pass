@@ -8,10 +8,22 @@ import { installDom, installBrowser, installTimers, loadPage, flush } from '../t
 const POPUP_HTML = new URL('../popup.html', import.meta.url);
 const POPUP_JS = new URL('./popup.js', import.meta.url);
 
-async function openPopup({ storage = {}, clipboardFails = false, storageReadFails = false, tabUrl } = {}) {
+async function openPopup({
+    storage = {},
+    clipboardFails = false,
+    storageReadFails = false,
+    syncReadFails = false,
+    tabUrl
+} = {}) {
     const elements = installDom([POPUP_HTML]);
     const { timers, cancelled } = installTimers();
-    const browser = installBrowser({ storage, clipboardFails, readFails: storageReadFails, tabUrl });
+    const browser = installBrowser({
+        storage,
+        clipboardFails,
+        readFails: storageReadFails,
+        syncReadFails,
+        tabUrl
+    });
     await loadPage(POPUP_JS);
 
     return {
@@ -120,6 +132,12 @@ test('popup generates a usable default password for a host with no public suffix
 
 test('popup flags settings it could not read instead of silently showing defaults', async () => {
     const popup = await openPopup({ storage: { emails: ['me@example.com'] }, storageReadFails: true });
+
+    assert.match(popup.text('notification'), /could not read/i);
+});
+
+test('popup also flags a partial read failure, not just a total one', async () => {
+    const popup = await openPopup({ storage: { emails: ['me@example.com'] }, syncReadFails: true });
 
     assert.match(popup.text('notification'), /could not read/i);
 });

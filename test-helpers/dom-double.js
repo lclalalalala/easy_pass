@@ -145,6 +145,9 @@ export function installBrowser({
     tabUrl = 'https://www.google.com/search',
     clipboardFails = false,
     readFails = false,
+    // 两个区域可以分别失效：真实的 chrome.storage 里 sync 和 local 是独立操作
+    syncReadFails = readFails,
+    localReadFails = readFails,
     writeFails = false
 } = {}) {
     const copied = [];
@@ -165,8 +168,8 @@ export function installBrowser({
 
     globalThis.alert = (message) => alerts.push(message);
 
-    const sync = createStorageArea(storage, { readFails, writeFails });
-    const local = createStorageArea({}, { readFails });
+    const sync = createStorageArea(storage, { readFails: syncReadFails, writeFails });
+    const local = createStorageArea({}, { readFails: localReadFails });
 
     globalThis.chrome = {
         tabs: { query: async () => [{ url: tabUrl }] },

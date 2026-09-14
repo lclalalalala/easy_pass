@@ -10,9 +10,9 @@ import { installDom, installBrowser, loadPage, flush, findByClassName } from '..
 const OPTIONS_HTML = new URL('../options.html', import.meta.url);
 const OPTIONS_JS = new URL('./options.js', import.meta.url);
 
-async function openOptions({ storage = {}, storageWriteFails = false } = {}) {
+async function openOptions({ storage = {}, storageWriteFails = false, syncReadFails = false, localReadFails = false } = {}) {
     const elements = installDom([OPTIONS_HTML]);
-    const browser = installBrowser({ storage, writeFails: storageWriteFails });
+    const browser = installBrowser({ storage, writeFails: storageWriteFails, syncReadFails, localReadFails });
     await loadPage(OPTIONS_JS);
 
     // 每次都重新查找：重绘后容器里的子元素是新的
@@ -138,6 +138,20 @@ test('every example shown in options.html is a rule that actually works', () => 
             `documented result is wrong for ${pair[1].trim()}`
         );
     }
+});
+
+test('options warns and refuses to save when only the sync read fails', async () => {
+    const page = await openOptions({ storage: { emails: ['a@x.com'] }, syncReadFails: true });
+
+    // 读不到就说读不到，不能显示成“你还没配过”
+    assert.match(page.elements.get('currentDefaultEmail').textContent, /could not read/i);
+
+    page.click('saveEmailBtn');
+    await flush();
+
+    // 关键：此时保存会把“读不到的数据”当成空配置写回去，必须拦住
+    assert.match(page.alerts[page.alerts.length - 1], /overwrite/i);
+    assert.deepEqual(page.sync.data.emails, ['a@x.com']);
 });
 
 test('debug output is built as text nodes, never as an HTML string', async () => {
