@@ -139,8 +139,40 @@ async function saveAll() {
     }
 }
 
+// 用 DOM 节点拼出 debug 结果。绝不能用 innerHTML：
+// 规则输出是用户可控的文本，规则里写 <img onerror=...> 就会在设置页里执行，
+// 而设置页有 storage 权限，能读走邮箱清单和生成规则。
+function renderDebugResult(blocks, isError) {
+    const output = document.getElementById('debugOutput');
+    output.replaceChildren();
+
+    for (const block of blocks) {
+        const title = document.createElement('p');
+        const strong = document.createElement('strong');
+        strong.textContent = block.title;
+        title.appendChild(strong);
+        output.appendChild(title);
+
+        const pre = document.createElement('pre');
+        pre.textContent = block.text;
+        output.appendChild(pre);
+    }
+
+    const result = document.getElementById('debugResult');
+    result.style.display = 'block';
+    result.className = isError ? 'debug-result error' : 'debug-result';
+}
+
+function runDebugStep(title, errorTitle, run) {
+    try {
+        return { title, text: run() };
+    } catch (error) {
+        return { title: errorTitle, text: error.message };
+    }
+}
+
 // Debug button click event
-document.getElementById('debugBtn').addEventListener('click', async function () {
+document.getElementById('debugBtn').addEventListener('click', function () {
     const passwordFunctionText = document.getElementById('passwordFunction').value.trim();
     const usernameFunctionText = document.getElementById('usernameFunction').value.trim();
 
@@ -149,61 +181,29 @@ document.getElementById('debugBtn').addEventListener('click', async function () 
         return;
     }
 
-    try {
-        let testVariables = {
-            domain: 'example',
-        };
+    const testVariables = { domain: 'example' };
+    const blocks = [{
+        title: 'Assumed current tab URL:',
+        text: 'https://www.example.com/path?query=123'
+    }];
 
-        let debugOutput = `
-            <p><strong>Assumed current tab URL:</strong></p>
-            <pre>https://www.example.com/path?query=123</pre>
-        `;
-
-        // Execute username debugging
-        if (usernameFunctionText) {
-            try {
-                const usernameResult = executePasswordFunction(usernameFunctionText, testVariables);
-                debugOutput += `
-                    <p><strong>Generated Username:</strong></p>
-                    <pre>${usernameResult}</pre>
-                `;
-            } catch (error) {
-                debugOutput += `
-                    <p><strong>Username Generation Error:</strong></p>
-                    <pre>${error.message}</pre>
-                `;
-            }
-        }
-
-        // Execute password debugging
-        if (passwordFunctionText) {
-            try {
-                const passwordResult = executePasswordFunction(passwordFunctionText, testVariables);
-                debugOutput += `
-                    <p><strong>Generated Password:</strong></p>
-                    <pre>${passwordResult}</pre>
-                `;
-            } catch (error) {
-                debugOutput += `
-                    <p><strong>Password Generation Error:</strong></p>
-                    <pre>${error.message}</pre>
-                `;
-            }
-        }
-
-        document.getElementById('debugOutput').innerHTML = debugOutput;
-        document.getElementById('debugResult').style.display = 'block';
-        document.getElementById('debugResult').className = 'debug-result';
-
-    } catch (error) {
-        document.getElementById('debugOutput').innerHTML = `
-            <p><strong>Error Message:</strong></p>
-            <pre>${error.message}</pre>
-            <p><strong>Please check if the function syntax is correct</strong></p>
-        `;
-        document.getElementById('debugResult').style.display = 'block';
-        document.getElementById('debugResult').className = 'debug-result error';
+    if (usernameFunctionText) {
+        blocks.push(runDebugStep(
+            'Generated Username:',
+            'Username Generation Error:',
+            () => executePasswordFunction(usernameFunctionText, testVariables)
+        ));
     }
+
+    if (passwordFunctionText) {
+        blocks.push(runDebugStep(
+            'Generated Password:',
+            'Password Generation Error:',
+            () => executePasswordFunction(passwordFunctionText, testVariables)
+        ));
+    }
+
+    renderDebugResult(blocks, false);
 });
 
 // Load saved functions

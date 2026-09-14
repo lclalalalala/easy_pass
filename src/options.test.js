@@ -140,6 +140,32 @@ test('every example shown in options.html is a rule that actually works', () => 
     }
 });
 
+test('debug output is built as text nodes, never as an HTML string', async () => {
+    const page = await openOptions({ storage: {} });
+    const payload = '<img src=x onerror="alert(1)">';
+
+    page.elements.get('usernameFunction').value = `user_{{1L}}${payload}`;
+    page.click('debugBtn');
+    await flush();
+
+    const output = page.elements.get('debugOutput');
+
+    // 规则输出是用户可控的文本，绝不能交给 innerHTML 去解析；
+    // 替身没有实现 innerHTML，所以只要代码不再写这个属性，它就是 undefined
+    assert.equal(output.innerHTML, undefined, 'debug output must not be built as HTML');
+
+    // 只允许生成展示用的标签，payload 不能变成元素
+    const tags = output.children.map((child) => child.tagName);
+    assert.ok(tags.length > 0, 'expected the debug output to be rendered');
+    for (const tag of tags) {
+        assert.ok(['P', 'PRE'].includes(tag), `unexpected element <${tag}> in the debug output`);
+    }
+
+    // payload 仍要以纯文本形式出现，方便用户看清规则生成了什么
+    const text = output.children.map((child) => child.textContent).join('\n');
+    assert.match(text, /<img src=x/);
+});
+
 test('saving an empty list clears the stored emails', async () => {
     const page = await openOptions({ storage: { emails: ['a@x.com'] } });
 
