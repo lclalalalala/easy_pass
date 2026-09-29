@@ -1,0 +1,49 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the tagged commit
+        uses: actions/checkout@v7
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - name: Check the tag matches the version that ships
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          version=$(node -p "require('./public/manifest.json').version")
+          if [ "$tag" != "$version" ]; then
+            echo "::error::tag $GITHUB_REF_NAME does not match manifest version $version"
+            exit 1
+          fi
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Package the extension
+        run: zip -r "../easy-pass-${GITHUB_REF_NAME}.zip" . -x '*.DS_Store'
+        working-directory: dist
+
+      - name: Publish the release
+        uses: softprops/action-gh-release@v3
+        with:
+          files: easy-pass-*.zip
+          generate_release_notes: true
